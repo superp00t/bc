@@ -230,7 +230,7 @@ bool CreateDirectory(FileParms* parms) {
 
     // Copy path
     len = String::Length(tmp);
-    if (len == 0 || len == PATH_MAX_STRING_SIZE) {
+    if (len == 0 || len == BC_FILE_MAX_PATH) {
         return false;
     }
 
