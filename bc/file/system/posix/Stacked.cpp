@@ -53,7 +53,7 @@ bool Open(FileParms* parms) {
     }
 
     if (fd == -1) {
-        BC_FILE_SET_ERROR_MSG(100 + errno, "Posix Open - %s", systemPath);
+        BC_FILE_SET_ERROR_MSG(100 + errno, "Posix Open - %s", parms->filename);
         return false;
     }
 
@@ -122,7 +122,7 @@ bool GetFreeSpace(FileParms* parms) {
 
     struct statvfs sv;
     if (statvfs(dirpathNative.Str(), &sv) != 0) {
-        BC_FILE_SET_ERROR_MSG(BC_FILE_ERROR_INVALID_ARGUMENT, "Posix GetFreeSpace - %s", parms->path);
+        BC_FILE_SET_ERROR_MSG(BC_FILE_ERROR_INVALID_ARGUMENT, "Posix GetFreeSpace - %s", dirpath);
         return false;
     }
 
@@ -210,8 +210,6 @@ bool MakeAbsolutePath(FileParms* parms) {
 
     //     // Force a slash to the end of the base path, so that we can append univpath
     //     String::ForceTrailingSeparator(basepath, parms->directorySize, BC_FILE_SYSTEM_PATH_SEPARATOR);
-    }
-
     return true;
 }
 
