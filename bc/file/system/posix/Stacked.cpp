@@ -5,6 +5,7 @@
 #include "bc/String.hpp"
 
 #include <cerrno>
+#include <cstdio>
 #include <dirent.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -226,16 +227,10 @@ bool CreateDirectory(FileParms* parms) {
     struct stat sb;
     size_t len;
 
+    // Copy path
     File::Path::MakeNativePath(parms->filename, tmp, BC_FILE_MAX_PATH);
 
-    // Copy path
-    len = String::Length(tmp);
-    if (len == 0 || len == BC_FILE_MAX_PATH) {
-        return false;
-    }
-
-    String::MemCopy(tmp, dir, len);
-    tmp[len] = '\0';
+    auto len = String::Length(tmp);
 
     // Remove trailing slash
     if(tmp[len - 1] == '/') {
@@ -268,7 +263,7 @@ bool CreateDirectory(FileParms* parms) {
     }
     if (stat(tmp, &sb) != 0) {
         // path does not exist, create directory
-        if (mkdir(tmp, mode) < 0) {
+        if (mkdir(tmp, 511) < 0) {
             return false;
         }
     } else if (!S_ISDIR(sb.st_mode)) {
@@ -354,7 +349,7 @@ bool SetEOF(FileParms* parms) {
     // Can occur as user may have tried to to resize to a large parms->position
     if (errno == ENOSPC) {
         // Code(9)
-        BC_FILE_SET_ERROR(BC_FILE_ERROR_NO_SPACE);
+        BC_FILE_SET_ERROR(BC_FILE_ERROR_NO_SPACE_ON_DEVICE);
         return false;
     }
 
@@ -375,7 +370,7 @@ bool SetAttributes(FileParms* parms) {
         return false;
     }
 
-    File::Mode mode       = parms->mode;
+    uint32_t   mode       = parms->mode;
     auto       attributes = info->attributes;
     int32_t    status     = 0;
     auto       file       = parms->stream;
@@ -383,11 +378,11 @@ bool SetAttributes(FileParms* parms) {
     if (mode & File::Mode::settimes) {
         timeval tvs[2];
 
-        tvs[0].tv_sec  = Time::ToUnixTime(info->modficationTime);
-        tvs[0].tv_nsec = 0;
+        tvs[0].tv_sec  = Time::ToUnixTime(info->modificationTime);
+        tvs[0].tv_usec = 0;
 
-        tvs[1].tv_sec  = tvs[0].tv_sec
-        tvs[1].tv_nsec = 0;
+        tvs[1].tv_sec  = tvs[0].tv_sec;
+        tvs[1].tv_usec = 0;
 
         // Attempt to apply times to file descriptor.
         status = futimes(file->filefd, tvs);
@@ -414,9 +409,9 @@ bool SetAttributes(FileParms* parms) {
         }
 
         if (attributes & BC_FILE_ATTRIBUTE_READONLY) {
-            status = chmod(path, 444);
+            status = chmod(path.Str(), 444);
         } else {
-            status = chmod(path, 511);
+            status = chmod(path.Str(), 511);
         }
 
         if (status != 0) {
