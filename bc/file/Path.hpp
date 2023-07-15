@@ -3,6 +3,8 @@
 
 #include "bc/file/Defines.hpp"
 
+#include <cstddef>
+
 namespace Blizzard {
 namespace File {
 namespace Path {
