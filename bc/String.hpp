@@ -23,7 +23,7 @@ class QuickFormat {
     public:
         char buffer[Cap];
 
-        QuickFormat(char* format, ...) {
+        QuickFormat(const char* format, ...) {
             va_list args;
             va_start(args, format);
             VFormat(this->buffer, Cap, format, args);
