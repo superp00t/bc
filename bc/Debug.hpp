@@ -18,6 +18,11 @@
 namespace Blizzard {
 namespace Debug {
 
+// Types
+class ErrorStackRecord {
+    public:
+};
+
 // Functions
 void Assert(const char* a1, const char* a2, uint32_t a3);
 void SetAssertHandler(Blizzard::System_Debug::AssertCallback callback);

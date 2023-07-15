@@ -11,6 +11,14 @@ namespace Blizzard {
 namespace Thread {
 
 // Types
+
+template<class Data>
+class LocalObject {
+    public:
+    Data* Constructor();
+    void  Destructor(Data*);
+};
+
 struct ThreadRecord {
 #if defined(WHOA_SYSTEM_MAC) || defined(WHOA_SYSTEM_LINUX)
     pthread_t unk0;

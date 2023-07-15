@@ -34,3 +34,17 @@ TEST_CASE("Blizzard::String::MemFill", "[string]") {
         REQUIRE(dst[2] == 0x66);
     }
 }
+
+TEST_CASE("Blizzard::String::QuickFormat", "[string]") {
+    SECTION("creates quick format string correctly") {
+        Blizzard::String::QuickFormat<20> format("%d %f %c", 100L, 59.59f, 'c');
+
+        auto str = format.Str();
+
+        REQUIRE(str[0] == '1');
+        REQUIRE(str[1] == '0');
+        REQUIRE(str[2] == '0');
+
+        REQUIRE(str[19] == '\0');
+    }
+}
