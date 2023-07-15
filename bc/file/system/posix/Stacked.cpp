@@ -47,12 +47,31 @@ bool Open(FileParms* parms) {
         fd = open(pathNative.Str(), flag);
     }
 
-    bool success = fd != -1;
-
-    if (!success) {
+    if (fd == -1) {
         BC_FILE_SET_ERROR_MSG(100 + errno, "Posix Open - %s", systemPath);
         return false;
     }
+
+    // Successfully opened file handle. Allocate StreamRecord + path str at the end.
+    auto recordSize = (sizeof(File::StreamRecord) - File::StreamRecord::s_padPath) + (1 + pathNative.Size());
+    auto fileData = Memory::Allocate(recordSize);
+    if (fileData == nullptr) {
+        BC_FILE_SET_ERROR(BC_FILE_ERROR_OOM);
+        return false;
+    }
+
+    String::MemFill(fileData, recordSize, 0);
+
+    auto file = reinterpret_cast<File::StreamRecord*>(fileData);
+
+    file->flags  = flags;
+    file->filefd = fd;
+
+    String::Copy(file->path, path, pathNative.Size());
+
+    File::GetFileInfo(file);
+
+    parms->stream = file;
 
     return true;
 }
@@ -103,7 +122,7 @@ bool GetFreeSpace(FileParms* parms) {
         return false;
     }
 
-    parms->size64 = sv.f_bavail * sv.f_blocks;
+    parms->size64 = sv.f_bavail * sv.f_frsize;
     return true;
 }
 
