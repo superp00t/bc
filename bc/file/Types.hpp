@@ -8,6 +8,8 @@
 #include <windows.h>
 #endif
 
+#include <cstddef>
+
 namespace Blizzard {
 namespace File {
 

@@ -31,7 +31,7 @@
 #define BC_FILE_ERROR_FILE_NOT_FOUND        2
 #define BC_FILE_ERROR_BAD_FILE              3
 #define BC_FILE_ERROR_BUSY                  4
-#define BC_FILE_ERROR_QUOTA                 5
+#define BC_FILE_ERROR_OOM                   5
 #define BC_FILE_ERROR_INVALID_HANDLE        6
 #define BC_FILE_ERROR_END_OF_FILE           7
 #define BC_FILE_ERROR_INVALID_ARGUMENT      8
