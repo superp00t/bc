@@ -53,7 +53,7 @@ void MemCopy(void* dst, const void* src, size_t len);
 
 int32_t MemCompare(void* p1, void *p2, size_t len);
 
-void Translate(const char* src, char* dest, size_t destSize, char* pattern, char* replacement);
+void Translate(const char* src, char* dest, size_t destSize, const char* pattern, const char* replacement);
 
 void VFormat(char* dst, size_t capacity, const char* format, va_list args);
 

@@ -126,10 +126,10 @@ char* Find(char* str, char ch, size_t len) {
     return nullptr;
 }
 
-char* FindFilename(char* str) {
-    char  ch     = 0;
-    char* result = nullptr;
-    auto  ptr    = str;
+const char* FindFilename(const char* str) {
+    char  ch           = 0;
+    const char* result = nullptr;
+    auto  ptr          = str;
 
     if (str == nullptr) {
         return "";
@@ -198,7 +198,7 @@ void MemFill(void* dst, uint32_t len, uint8_t fill) {
     memset(dst, fill, len);
 }
 
-void Translate(const char* src, char* dest, size_t destSize, char* pattern, char* replacement) {
+void Translate(const char* src, char* dest, size_t destSize, const char* pattern, const char* replacement) {
     if (dest == nullptr || pattern == nullptr || replacement == nullptr) {
         return;
     }
