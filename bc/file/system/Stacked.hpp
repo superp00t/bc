@@ -79,7 +79,7 @@ bool Write(FileParms* parms);
 bool WriteP(FileParms* parms);
 
 } // namespace Stacked
-} // namespace File
+} // namespace System_File
 } // namespace Blizzard
 
 #endif

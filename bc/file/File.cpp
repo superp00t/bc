@@ -50,6 +50,7 @@ bool IsFile(const char* path) {
     return Exists(path);
 }
 
+// Calls Exists internally, only checking whether it has the directory attribute instead of normal attribute
 bool IsDirectory(const char* path) {
     auto manager = System_File::Stacked::Manager();
     if (!manager) {
@@ -62,7 +63,7 @@ bool IsDirectory(const char* path) {
     parms.filename = path;
     parms.info     = &info;
 
-    auto status = manager->Do(Filesystem::Call::GetFileInfo, &parms);
+    auto status = manager->Do(Filesystem::Call::Exists, &parms);
 
     return info.attributes & BC_FILE_ATTRIBUTE_DIRECTORY;
 }

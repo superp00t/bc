@@ -2,9 +2,14 @@
 #include "bc/file/Path.hpp"
 #include "bc/Debug.hpp"
 #include "bc/Memory.hpp"
+#include "bc/String.hpp"
 
+#include <cerrno>
+#include <dirent.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sys/statvfs.h>
+#include <sys/types.h>
 
 namespace Blizzard {
 namespace System_File {
@@ -23,28 +28,28 @@ bool Open(FileParms* parms) {
 
     BLIZZARD_ASSERT(read || write);
 
-    int32_t flag = 0;
+    int32_t flags = 0;
 
     if (read && !write) {
-        flag = O_RDONLY;
+        flags = O_RDONLY;
     } else if (!read && write) {
-        flag = O_WRONLY;
+        flags = O_WRONLY;
     } else if (read && write) {
-        flag = O_RDWR;
+        flags = O_RDWR;
     }
 
     int32_t fd = -1;
 
     if (create) {
-        flag |= O_CREAT;
+        flags |= O_CREAT;
 
         if (mustNotExist) {
-            flag |= O_EXCL;
+            flags |= O_EXCL;
         }
 
-        fd = open(pathNative.Str(), flag, 511);
+        fd = open(pathNative.Str(), flags, 511);
     } else {
-        fd = open(pathNative.Str(), flag);
+        fd = open(pathNative.Str(), flags);
     }
 
     if (fd == -1) {
@@ -67,7 +72,7 @@ bool Open(FileParms* parms) {
     file->flags  = flags;
     file->filefd = fd;
 
-    String::Copy(file->path, path, pathNative.Size());
+    String::Copy(file->path, parms->filename, pathNative.Size());
 
     File::GetFileInfo(file);
 
@@ -80,7 +85,7 @@ bool Exists(FileParms* parms) {
     BC_FILE_PATH(buffer);
 
     auto        filepath = parms->filename;
-    char*       empty    = "";
+    auto        empty    = "";
     size_t      len      = 0;
     struct stat info     = {};
     bool        exists   = false;
@@ -89,7 +94,6 @@ bool Exists(FileParms* parms) {
 
     auto status = stat(filepathNative.Str(), &info);
 
-    bool exists = false;
     if (status != -1) {
         parms->info->attributes = 0;
         // Collect attributes.
