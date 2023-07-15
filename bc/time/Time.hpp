@@ -15,7 +15,7 @@ namespace Time {
 
 int32_t   ToUnixTime(Timestamp timestamp);
 
-Timestamp FromUnixTime(int32_t unix);
+Timestamp FromUnixTime(int32_t unixTime);
 
 #if defined(WHOA_SYSTEM_WIN)
 // Win32 FILETIME to y2k

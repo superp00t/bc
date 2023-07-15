@@ -32,9 +32,9 @@ int32_t ToUnixTime(Timestamp timestamp) {
     return static_cast<uint32_t>(y1970 / BC_NSEC_PER_SEC);
 }
 
-Timestamp FromUnixTime(int32_t unix) {
+Timestamp FromUnixTime(int32_t unixTime) {
     // Convert seconds to nanoseconds
-    auto unixnano  = int64_t(unix) * BC_NSEC_PER_SEC;
+    auto unixnano  = int64_t(unixTime) * BC_NSEC_PER_SEC;
     // Move forward 30 years
 	auto y2k = unixnano - 946684800000000000ULL;
 
