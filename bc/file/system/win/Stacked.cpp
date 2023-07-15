@@ -527,6 +527,11 @@ bool Open(FileParms* parms) {
     auto recordSize = (sizeof(File::StreamRecord) - File::StreamRecord::s_padPath) + (1 + pathNative.Size());
 
     auto fileData = Memory::Allocate(recordSize);
+    if (fileData == nullptr) {
+        BC_FILE_SET_ERROR(BC_FILE_ERROR_OOM);
+        return false;
+    }
+
     String::MemFill(fileData, recordSize, 0);
 
     auto file = reinterpret_cast<File::StreamRecord*>(fileData);
