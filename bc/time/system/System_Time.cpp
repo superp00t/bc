@@ -10,7 +10,8 @@
 #endif
 
 #if defined(WHOA_SYSTEM_LINUX)
-#include <time.h>
+#include <ctime>
+#include <sys/time.h>
 #endif
 
 #include "bc/Debug.hpp"
@@ -54,11 +55,11 @@ bool ReadTSC(uint64_t& counter) {
 #elif defined(WHOA_SYSTEM_LINUX)
     struct timespec ts;
 
-    auto status = clock_gettime(CLOCK_MONOTONIC_RAW, &ts));
+    auto status = clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
     bool ok     = status == 0;
 
     if (ok) {
-        counter = (static_cast<uint64_t>(ts.tv_sec) * BC_NSEC_PER_SEC)) + ts.tv_nsec;
+        counter = (static_cast<uint64_t>(ts.tv_sec) * BC_NSEC_PER_SEC) + ts.tv_nsec;
     }
 
     return ok;
