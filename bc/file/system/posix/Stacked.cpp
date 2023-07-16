@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <sys/statvfs.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 namespace Blizzard {
 namespace System_File {
@@ -225,7 +226,6 @@ bool CreateDirectory(FileParms* parms) {
     char        tmp[BC_FILE_MAX_PATH] = {};
     char*       p = nullptr;
     struct stat sb;
-    size_t len;
 
     // Copy path
     File::Path::MakeNativePath(parms->filename, tmp, BC_FILE_MAX_PATH);
@@ -277,8 +277,10 @@ bool Move(FileParms* parms) {
     File::Path::QuickNative source(parms->filename);
     File::Path::QuickNative destination(parms->destination);
 
+    struct stat st;
+
     // Fail if destination already exists.
-    int32_t status = stat(destination.Str(), &destInfo);
+    int32_t status = stat(destination.Str(), &st);
     if (status == 0) {
         BC_FILE_SET_ERROR(BC_FILE_ERROR_INVALID_ARGUMENT);
         return false;
