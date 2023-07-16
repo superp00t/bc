@@ -67,7 +67,9 @@ bool ProcessDirFast(FileParms* parms) {
 
     // Convert potentially large path to universal format
     BC_FILE_PATH(path);
-    File::Path::MakeNativePath(formatted, path, formatSize);
+    if (!File::Path::MakeNativePath(formatted, path, formatSize)) {
+        return false;
+    }
 
     //
     WIN32_FIND_DATA findData;
