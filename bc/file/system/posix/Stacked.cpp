@@ -378,7 +378,9 @@ bool SetAttributes(FileParms* parms) {
     auto       file       = parms->stream;
 
     if (mode & File::Mode::settimes) {
-        timeval tvs[2];
+#if defined(WHOA_SYSTEM_MAC)
+        // Use BSD function futimes
+        struct timeval tvs[2];
 
         tvs[0].tv_sec  = Time::ToUnixTime(info->modificationTime);
         tvs[0].tv_usec = 0;
@@ -387,7 +389,18 @@ bool SetAttributes(FileParms* parms) {
         tvs[1].tv_usec = 0;
 
         // Attempt to apply times to file descriptor.
-        status = futimes(file->filefd, tvs);
+        status = ::futimes(file->filefd, tvs);
+#else
+        // use Linux equivalent futimens
+        struct timespec tsp[2];
+        tsp[0].tv_sec  = Time::ToUnixTime(info->modificationTime);
+        tsp[0].tv_nsec = 0;
+
+        tsp[1].tv_sec  = tsp[0].tv_sec;
+        tsp[1].tv_nsec = 0;
+        status = ::futimens(file->filefd, tsp);
+#endif
+
         if (status != 0) {
             BC_FILE_SET_ERROR(BC_FILE_ERROR_INVALID_ARGUMENT);
             return false;
