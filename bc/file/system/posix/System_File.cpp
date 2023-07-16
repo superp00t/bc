@@ -274,7 +274,7 @@ bool Copy(File::Filesystem* fs, Stacked::FileParms* parms) {
     auto sz_source = File::GetFileInfo(st_source)->size;
 
     // copybuffer size upper limit is BC_FILE_SYSTEM_COPYBUFFER_SIZE
-    size_t sz_copybuffer = std::min(sz_source, BC_FILE_SYSTEM_COPYBUFFER_SIZE);
+    size_t sz_copybuffer = std::min(sz_source, size_t(BC_FILE_SYSTEM_COPYBUFFER_SIZE));
     auto   u8_copybuffer = reinterpret_cast<uint8_t*>(Memory::Allocate(sz_copybuffer));
 
     // Loop through the source file, reading segments into copybuffer
@@ -436,7 +436,7 @@ bool Delete(File::Filesystem* fs, Stacked::FileParms* parms) {
 }
 
 // Write system file specifying options.
-bool Write(File::StreamRecord* file, void* data, int64_t offset, int32_t* bytes) {
+bool Write(File::StreamRecord* file, void* data, int64_t offset, size_t* bytes) {
     // File descriptor must be initialized!
     BLIZZARD_ASSERT(file != nullptr && file->filefd != -1);
 
@@ -484,7 +484,7 @@ bool Write(File::StreamRecord* file, void* data, int64_t offset, int32_t* bytes)
         data += increment;
     }
 
-    // How many bytes did we read
+    // How many bytes did we write
     *bytes = size - index;
 
 	return true;

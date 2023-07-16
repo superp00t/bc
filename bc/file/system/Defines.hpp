@@ -4,7 +4,7 @@
 // Constants
 
 // How much data to buffer when copying with File::Copy
-#define BC_FILE_SYSTEM_COPYBUFFER_SIZE 0xA00000ULL
+#define BC_FILE_SYSTEM_COPYBUFFER_SIZE 0xA00000UL
 
 // Utility macros
 
