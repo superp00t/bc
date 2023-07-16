@@ -1,10 +1,14 @@
 #include "bc/file/system/System_File.hpp"
 #include "bc/file/system/Stacked.hpp"
-#include "bc/Debug.hpp"
+#include "bc/file/Path.hpp"
 #include "bc/String.hpp"
+#include "bc/Debug.hpp"
+#include "bc/Memory.hpp"
 
-#include <storm/String.hpp>
+#include <algorithm>
+#include <cerrno>
 #include <unistd.h>
+#include <sys/stat.h>
 
 namespace Blizzard {
 namespace System_File {
@@ -126,10 +130,10 @@ bool GetFileInfo(File::Filesystem* fs, Stacked::FileParms* parms) {
     }
 
     // Set existence bool
-    infoptr->exists = status != -1;
+    auto exists = status != -1;
 
     // Collect POSIX filesystem info into File::FileInfo structure
-    if (infoptr->exists) {
+    if (exists) {
         // Collect attributes.
         if (S_ISDIR(info.st_mode)) {
             infoptr->attributes |= BC_FILE_ATTRIBUTE_DIRECTORY;
@@ -230,9 +234,11 @@ bool Move(File::Filesystem* fs, Stacked::FileParms* parms) {
 // Copy file data from parms->filename to parms->destination
 // Must only return true if file was copied entirely (Move depends on this being accurate)
 bool Copy(File::Filesystem* fs, Stacked::FileParms* parms) {
-    // Set up native paths
-    File::Path::QuickNative source(parms->filename);
-    File::Path::QuickNative destination(parms->destination);
+    auto overwrite = parms->flag;
+
+    // Set up virtual paths
+    auto source      = parms->filename;
+    auto destination = parms->destination;
 
     // file pointers
     File::StreamRecord* st_source      = nullptr;
@@ -241,12 +247,12 @@ bool Copy(File::Filesystem* fs, Stacked::FileParms* parms) {
     // Flags for working with src and dst files
     auto flag_source      = BC_FILE_OPEN_LOCK | BC_FILE_OPEN_READ | BC_FILE_OPEN_MUST_EXIST;
     auto flag_destination = BC_FILE_OPEN_LOCK | BC_FILE_OPEN_WRITE | BC_FILE_OPEN_CREATE;
-    if (!parms->overwrite) {
+    if (!overwrite) {
         // User commands that we cannot overwrite. Fail if file already exists
         flag_destination |= BC_FILE_OPEN_MUST_NOT_EXIST;
     } else {
         // We are supposed to overwrite, so truncate the file to 0 bytes.
-        flag_destination |= BC_FILE_TRUNCATE;
+        flag_destination |= BC_FILE_OPEN_TRUNCATE;
     }
 
     // Open source file to be copied
@@ -310,7 +316,7 @@ bool Open(File::Filesystem* fs, Stacked::FileParms* parms) {
     return Stacked::Open(parms);
 }
 
-bool Read(File::StreamRecord* file, void* data, int64_t offset, int32_t* bytes) {
+bool Read(File::StreamRecord* file, void* data, int64_t offset, size_t* bytes) {
     // File descriptor must be initialized!
     BLIZZARD_ASSERT(file != nullptr && file->filefd != -1);
 
