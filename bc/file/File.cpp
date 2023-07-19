@@ -148,7 +148,7 @@ FileInfo* GetFileInfo(StreamRecord* stream) {
     return &s_noinfo;
 }
 
-// Open a filename according to flags (see File::OpenFlags)
+// Open a filename according to flags (see Defines.hpp)
 // if successful, will return true and referenced file object will be set
 bool Open(const char* filename, uint32_t flags, StreamRecord*& file) {
     auto manager = System_File::Stacked::Manager();

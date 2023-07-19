@@ -64,6 +64,22 @@ DWORD AttributesToWin(uint32_t fileAttributes) {
     return dwFileAttributes;
 }
 
+uint64_t UnpackFiletime(FILETIME ft) {
+    ULARGE_INTEGER ul = {};
+    ul.HighPart = ft.dwHighDateTime;
+    ul.LowPart  = ft.dwLowDateTime;
+    return static_cast<uint64_t>(ul.QuadPart);
+}
+
+FILETIME PackFiletime(uint64_t qw) {
+    ULARGE_INTEGER ul = {};
+    ul.QuadPart = qw;
+    FILETIME ft = {};
+    ft.dwHighDateTime = ul.HighPart;
+    ft.dwLowDateTime = ul.LowPart;
+    return ft;
+}
+
 // Returns true if BY_HANDLE_FILE_INFORMATION is successfully converted to File::FileInfo.
 bool HandleFileInfoToBC(
     LPBY_HANDLE_FILE_INFORMATION  winInfo,
@@ -76,9 +92,9 @@ bool HandleFileInfoToBC(
     info->device     = static_cast<uint32_t>(winInfo->dwVolumeSerialNumber);
     info->size       = (static_cast<uint64_t>(winInfo->nFileSizeHigh) << 32ULL) | static_cast<uint64_t>(winInfo->nFileSizeLow);
 
-    info->accessTime                = Blizzard::Time::FromWinFiletime(&winInfo->ftLastAccessTime);
-    info->modificationTime          = Blizzard::Time::FromWinFiletime(&winInfo->ftLastWriteTime);
-    info->attributeModificationTime = Blizzard::Time::FromWinFiletime(&winInfo->ftCreationTime);
+    info->accessTime                = Blizzard::Time::FromWinFiletime(UnpackFiletime(winInfo->ftLastAccessTime));
+    info->modificationTime          = Blizzard::Time::FromWinFiletime(UnpackFiletime(winInfo->ftLastWriteTime));
+    info->attributeModificationTime = Blizzard::Time::FromWinFiletime(UnpackFiletime(winInfo->ftCreationTime));
 
     return true;
 }
@@ -96,9 +112,9 @@ bool AttributeFileInfoToBC(
     info->device     = 0;
     info->size       = (static_cast<uint64_t>(winInfo->nFileSizeHigh) << 32ULL) | static_cast<uint64_t>(winInfo->nFileSizeLow);
 
-    info->accessTime                = Blizzard::Time::FromWinFiletime(&winInfo->ftLastAccessTime);
-    info->modificationTime          = Blizzard::Time::FromWinFiletime(&winInfo->ftLastWriteTime);
-    info->attributeModificationTime = Blizzard::Time::FromWinFiletime(&winInfo->ftCreationTime);
+    info->accessTime                = Blizzard::Time::FromWinFiletime(UnpackFiletime(winInfo->ftLastAccessTime));
+    info->modificationTime          = Blizzard::Time::FromWinFiletime(UnpackFiletime(winInfo->ftLastWriteTime));
+    info->attributeModificationTime = Blizzard::Time::FromWinFiletime(UnpackFiletime(winInfo->ftCreationTime));
 
     return true;
 }
@@ -134,17 +150,15 @@ HANDLE Open(const char* systemPath, uint32_t flags, bool nocache) {
         desiredAccess |= GENERIC_WRITE;
     }
 
-    if (truncate) {
-
-    }
-
     // Setup create disposition
     if (create && mustNotExist) {
         createDisposition = CREATE_NEW;
     } else if (create && !mustNotExist) {
         createDisposition = CREATE_ALWAYS;
+    } else if (truncate) {
+        createDisposition = TRUNCATE_EXISTING;
     } else if (mustExist) {
-        createDisposition = truncate ? TRUNCATE_EXISTING : OPEN_EXISTING;
+        createDisposition = OPEN_EXISTING;
     } else {
         createDisposition = OPEN_ALWAYS;
     }

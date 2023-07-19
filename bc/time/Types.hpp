@@ -3,8 +3,6 @@
 
 #include <cstdint>
 
-#define BC_NSEC_PER_SEC 1000000000ULL
-
 namespace Blizzard {
 namespace Time {
 
@@ -13,13 +11,15 @@ typedef int64_t Timestamp;
 
 class TimeRec {
     public:
-        int32_t  year;
-        int32_t  month;
-        int32_t  day;
-        int32_t  hour;
-        int32_t  min;
-        int32_t  sec;
-        uint32_t nsec;
+        int32_t   year;
+        uint32_t  month;
+        uint32_t  day;
+        uint32_t  hour;
+        uint32_t  min;
+        uint32_t  sec;
+        uint32_t  nsec;
+        uint32_t  wday;
+        uint32_t  yday;
 };
 
 } // namespace Time

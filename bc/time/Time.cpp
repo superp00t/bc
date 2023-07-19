@@ -1,14 +1,37 @@
 #include "bc/time/Time.hpp"
+#include "bc/time/TimeConst.hpp"
+
+#if defined(WHOA_SYSTEM_WIN)
+#include <windows.h>
+#endif
+
+#if defined(WHOA_SYSTEM_MAC) || defined(WHOA_SYSTEM_LINUX)
+
+#endif
 
 namespace Blizzard {
 namespace Time {
 
 // Global variables
 
-// amount of win32 filetime units in a second
-constexpr uint64_t win32filetimeUnitsPerSec   = (BC_NSEC_PER_SEC / 100ULL);
-// the FILETIME value needed to move from 1601 epoch to the Year 2000 epoch that Blizzard prefers
-constexpr uint64_t win32filetimeY2kDifference = 125911584000000000ULL;
+// Jan = [1],
+// Feb = [2] and so on
+static uint32_t s_monthDays[14] = {
+    0x41F00000, // Invalid?
+    0,
+    31,
+    59,
+    90,
+    120,
+    151,
+    182,
+    212,
+    243,
+    273,
+    304,
+    334,
+    365
+};
 
 // Functions
 
@@ -29,39 +52,39 @@ int32_t ToUnixTime(Timestamp timestamp) {
     // Go back 30 years
     auto y1970 = timestamp + 946684800000000000ULL;
     // Convert nanoseconds to seconds
-    return static_cast<uint32_t>(y1970 / BC_NSEC_PER_SEC);
+    return static_cast<uint32_t>(y1970 / TimeConst::TimestampsPerSecond);
 }
 
 Timestamp FromUnixTime(int32_t unixTime) {
     // Convert seconds to nanoseconds
-    auto unixnano  = int64_t(unixTime) * BC_NSEC_PER_SEC;
+    auto unixnano  = int64_t(unixTime) * TimeConst::TimestampsPerSecond;
     // Move forward 30 years
 	auto y2k = unixnano - 946684800000000000ULL;
 
 	return static_cast<Timestamp>(y2k);
 }
 
-
-#if defined(WHOA_SYSTEM_WIN)
-
 // Win32 FILETIME to y2k
-Timestamp FromWinFiletime(FILETIME* ft) {
+Timestamp FromWinFiletime(uint64_t winTime) {
+    if (winTime < 33677863631452242ULL) {
+        return -0x8000000000000000LL;
+    }
+
+    if (winTime >= 218145301729837567ULL) {
+        return 0x7fffffffffffffffLL;
+    }
+
     // 1601 (Gregorian) 100-nsec
-    auto gregorian = (static_cast<uint64_t>(ft->dwHighDateTime) << 32ULL) | static_cast<uint64_t>(ft->dwLowDateTime);
+    auto gregorian = static_cast<int64_t>(winTime);
     // Convert filetime from 1601 epoch to 2000 epoch.
-    auto y2k = gregorian - win32filetimeY2kDifference;
+    auto y2k = gregorian - TimeConst::WinFiletimeY2kDifference;
     // Convert 100-nsec intervals into nsec intervals
-    return static_cast<Time::Timestamp>(y2k * 100ULL);
+    return static_cast<Time::Timestamp>(y2k * 100LL);
 }
 
-void ToWinFiletime(Timestamp y2k, FILETIME* ft) {
-    auto gregorian = (y2k + win32filetimeY2kDifference) / 100ULL;
-
-    ft->dwLowDateTime  = static_cast<DWORD>(gregorian);
-    ft->dwHighDateTime = static_cast<DWORD>(gregorian >> 32ULL);
+uint64_t ToWinFiletime(Timestamp y2k) {
+   return (y2k + TimeConst::WinFiletimeY2kDifference) / 100ULL;
 }
-
-#endif
 
 int32_t GetTimeElapsed(uint32_t start, uint32_t end) {
     if (end < start) {
@@ -90,13 +113,109 @@ uint32_t Seconds() {
     return System_Time::Seconds();
 }
 
-Timestamp MakeTime(TimeRec& date) {
-    // TODO: implement
-    return 0;
+Timestamp MakeTime(const TimeRec& date) {
+ #if defined(WHOA_SYSTEM_WIN)
+    // Win32 implementation
+    FILETIME   fileTime   = {};
+    SYSTEMTIME systemTime = {};
+
+    systemTime.wYear   = static_cast<WORD>(date.year);
+    systemTime.wMonth  = static_cast<WORD>(date.month);
+    systemTime.wDay    = static_cast<WORD>(date.day);
+    systemTime.wHour   = static_cast<WORD>(date.hour);
+    systemTime.wMinute = static_cast<WORD>(date.min);
+    systemTime.wSecond = static_cast<WORD>(date.sec);
+    systemTime.wMilliseconds = 0;
+
+    SystemTimeToFileTime(&systemTime, &fileTime);
+
+    ULARGE_INTEGER ul = {};
+    ul.HighPart = fileTime.dwHighDateTime;
+    ul.LowPart  = fileTime.dwLowDateTime;
+
+    auto timestamp = FromWinFiletime(ul.QuadPart);
+    if (timestamp == -0x8000000000000000LL || timestamp == 0x7fffffffffffffffLL) {
+        return timestamp;
+    }
+
+    timestamp += date.nsec;
+#endif
+
+#if defined(WHOA_SYSTEM_MAC) || defined(WHOA_SYSTEM_LINUX)
+    // UNIX implementation
+    struct tm t;
+
+    t.tm_year = date.year  - 1900;
+    t.tm_mon  = date.month - 1;
+    t.tm_mday = date.day;
+    t.tm_hour = date.hour;
+    t.tm_min  = date.min;
+    t.tm_sec  = date.sec;
+
+    // Convert date into UNIX timestamp
+    auto unixTime  = timegm(&t);
+    auto timestamp = FromUnixTime(unixTime);
+    if (timestamp == -2147483648L || timestamp == 2147483647L) {
+        return timestamp;
+    }
+
+    timestamp += date.nsec;
+#endif
+    return timestamp;
 }
 
 void BreakTime(Timestamp timestamp, TimeRec& date) {
-    // TODO: implement
+    auto nsec = timestamp % TimeConst::TimestampsPerSecond;
+
+    if (nsec < 0) {
+        nsec += TimeConst::TimestampsPerSecond;
+    }
+
+#if defined(WHOA_SYSTEM_WIN)
+    // Win32 implementation
+    ULARGE_INTEGER ul = {};
+    ul.QuadPart = ToWinFiletime(timestamp);
+
+    FILETIME fileTime = {};
+    fileTime.dwHighDateTime = ul.HighPart;
+    fileTime.dwLowDateTime  = ul.LowPart;
+    SYSTEMTIME systemTime = {};
+    ::FileTimeToSystemTime(&fileTime, &systemTime);
+
+    date.day  = static_cast<uint32_t>(systemTime.wDay);
+    date.hour = static_cast<uint32_t>(systemTime.wHour);
+    date.min  = static_cast<uint32_t>(systemTime.wMinute);
+    date.sec  = static_cast<uint32_t>(systemTime.wSecond);
+    date.wday = static_cast<uint32_t>(systemTime.wDayOfWeek);
+    date.year = static_cast<uint32_t>(systemTime.wYear);
+    date.nsec = nsec;
+
+    bool leapYear = (date.year % 400 == 0) || (date.year % 100 != 0 && ((systemTime.wYear & 3) == 0));
+
+    auto yearDay = s_monthDays[date.month] + -1 + static_cast<uint32_t>(systemTime.wDay);
+    date.yday = yearDay;
+    if (leapYear && date.month > 2) {
+        date.yday++;
+    }
+#endif
+
+#if defined(WHOA_SYSTEM_MAC) || defined(WHOA_SYSTEM_LINUX)
+    // UNIX implementation
+    auto unixTime = ToUnixTime(timestamp);
+
+    struct tm t;
+    ::gmtime_r(unixTime, &t);
+
+    date.year  = t.tm_year + 1900;
+    date.month = t.tm_mon  + 1;
+    date.day   = t.tm_mday;
+    date.hour  = t.tm_hour;
+    date.min   = t.tm_min;
+    date.sec   = t.tm_sec;
+    date.nsec  = nsec;
+    date.wday  = t.tm_wday;
+    date.yday  = t.tm_yday;
+#endif
 }
 
 } // namespace Time

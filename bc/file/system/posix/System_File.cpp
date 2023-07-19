@@ -179,7 +179,7 @@ bool GetPos(File::Filesystem* fs, Stacked::FileParms* parms) {
 }
 
 // Return an index @parms->position, pointing to the end of the "root chars" portion of a string.
-// On MacOS, this would be under /Volumes/
+// On MacOS, this would be /Volumes/<your volume>
 bool GetRootChars(File::Filesystem* fs, Stacked::FileParms* parms) {
     auto name = parms->filename;
 

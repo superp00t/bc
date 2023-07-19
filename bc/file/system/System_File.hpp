@@ -4,11 +4,12 @@
 #include "bc/Debug.hpp"
 #include "bc/file/system/Types.hpp"
 #include "bc/file/Filesystem.hpp"
-#include <cstdint>
 
 #if defined(WHOA_SYSTEM_WIN)
 #include "bc/file/system/win/Support.hpp"
 #endif
+
+#include <cstdint>
 
 namespace Blizzard {
 namespace System_File {

@@ -604,8 +604,6 @@ bool RemoveDirectory(FileParms* parms) {
 }
 
 bool SetCacheMode(FileParms* parms) {
-    char path[300] = {0};
-
     auto file = parms->stream;
 
     if (file == nullptr) {
@@ -625,7 +623,7 @@ bool SetCacheMode(FileParms* parms) {
 
     bool nocache = (parms->mode & File::Mode::nocache) != 0;
 
-    file->filehandle = winfileutil::Open(path, file->flags, nocache);
+    file->filehandle = winfileutil::Open(pathNative.Str(), file->flags, nocache);
 
     if (file->filehandle == INVALID_HANDLE_VALUE) {
         BC_FILE_SET_ERROR_MSG(4, "Win32 SetCacheMode - %s", file->path);
@@ -689,8 +687,7 @@ bool SetAttributes(FileParms* parms) {
     if (mode & File::Mode::settimes) {
         auto modTime = info->modificationTime;
 
-        FILETIME ft;
-        Time::ToWinFiletime(modTime, &ft);
+        FILETIME ft = winfileutil::PackFiletime(Time::ToWinFiletime(modTime));
 
         if (::SetFileTime(file->filehandle, nullptr, nullptr, &ft)) {
             file->info.modificationTime = modTime;

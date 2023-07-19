@@ -1,5 +1,6 @@
 #include "bc/time/system/System_Time.hpp"
 #include "bc/time/Time.hpp"
+#include "bc/time/TimeConst.hpp"
 
 #if defined(WHOA_SYSTEM_MAC)
 #include <mach/mach_time.h>
@@ -59,7 +60,7 @@ bool ReadTSC(uint64_t& counter) {
     bool ok     = status == 0;
 
     if (ok) {
-        counter = (static_cast<uint64_t>(ts.tv_sec) * BC_NSEC_PER_SEC) + ts.tv_nsec;
+        counter = (static_cast<uint64_t>(ts.tv_sec) * TimeConst::TimestampsPerSecond) + ts.tv_nsec;
     }
 
     return ok;
@@ -101,11 +102,14 @@ void TimeInit() {
 #elif defined(WHOA_SYSTEM_WIN)
     // Win32 wall clock
     // Do some simple math to move FILETIME into Y2K epoch
-    SYSTEMTIME st;
-    FILETIME ft;
+    SYSTEMTIME st = {};
+    FILETIME ft = {};
     GetSystemTime(&st);
     SystemTimeToFileTime(&st, &ft);
-    s_gmBegin = Time::FromWinFiletime(&ft);
+    ULARGE_INTEGER ul = {};
+    ul.HighPart = ft.dwHighDateTime;
+    ul.LowPart  = ft.dwLowDateTime;
+    s_gmBegin = Time::FromWinFiletime(ul.QuadPart);
 #endif
 
     // Attempt to figure out the scale of TSC durations in real-time
@@ -115,7 +119,7 @@ void TimeInit() {
     QueryPerformanceFrequency(&freq);
 
     auto ticksPerSecond       = static_cast<uint64_t>(freq.QuadPart);
-    auto ticksPerNanosecond   = static_cast<double>(ticksPerSecond) / double(BC_NSEC_PER_SEC);
+    auto ticksPerNanosecond   = static_cast<double>(ticksPerSecond) / double(TimeConst::TimestampsPerSecond);
 
     timeScaleNanoseconds = 1.0 / static_cast<double>(ticksPerNanosecond);
 #elif defined(WHOA_SYSTEM_MAC)
@@ -128,7 +132,7 @@ void TimeInit() {
     // clock_gettime is already attuned to timestamp counter frequency
     timeScaleNanoseconds = 1.0;
 #endif
-    timeScaleMicroseconds = timeScaleNanoseconds * 0.01;
+    timeScaleMicroseconds = timeScaleNanoseconds * 1000.0;
     timeScaleMilliseconds = timeScaleNanoseconds * 1000000.0;
     timeScaleSeconds      = timeScaleNanoseconds * 1000000000.0;
 }

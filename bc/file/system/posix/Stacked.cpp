@@ -94,7 +94,7 @@ bool Exists(FileParms* parms) {
 
     File::Path::QuickNative filepathNative(filepath);
 
-    auto status = stat(filepathNative.Str(), &info);
+    auto status = ::stat(filepathNative.Str(), &info);
 
     if (status != -1) {
         parms->info->attributes = 0;
@@ -238,7 +238,7 @@ bool CreateDirectory(FileParms* parms) {
     }
 
     // check if path exists and is a directory
-    if (stat(tmp, &sb) == 0) {
+    if (::stat(tmp, &sb) == 0) {
         if (S_ISDIR(sb.st_mode)) {
             return true;
         }
@@ -249,9 +249,9 @@ bool CreateDirectory(FileParms* parms) {
         if(*p == '/') {
             *p = 0;
             // test path
-            if (stat(tmp, &sb) != 0) {
+            if (::stat(tmp, &sb) != 0) {
                 // path does not exist, create directory
-                if (mkdir(tmp, 511) < 0) {
+                if (::mkdir(tmp, 511) < 0) {
                     return false;
                 }
             } else if (!S_ISDIR(sb.st_mode)) {
@@ -261,9 +261,11 @@ bool CreateDirectory(FileParms* parms) {
             *p = '/';
         }
     }
+
+    // check remaining path existence
     if (stat(tmp, &sb) != 0) {
         // path does not exist, create directory
-        if (mkdir(tmp, 511) < 0) {
+        if (::mkdir(tmp, 511) < 0) {
             return false;
         }
     } else if (!S_ISDIR(sb.st_mode)) {
@@ -280,7 +282,7 @@ bool Move(FileParms* parms) {
     struct stat st;
 
     // Fail if destination already exists.
-    int32_t status = stat(destination.Str(), &st);
+    int32_t status = ::stat(destination.Str(), &st);
     if (status == 0) {
         BC_FILE_SET_ERROR(BC_FILE_ERROR_INVALID_ARGUMENT);
         return false;
@@ -337,7 +339,7 @@ bool SetEOF(FileParms* parms) {
     }
 
     // Perform truncation.
-    auto status = ftruncate(file->filefd, static_cast<off_t>(parms->position));
+    auto status = ::ftruncate(file->filefd, static_cast<off_t>(parms->position));
     if (status != -1) {
         // Success!
 
@@ -417,16 +419,16 @@ bool SetAttributes(FileParms* parms) {
 
         // Get unix permissions
         struct stat info = {};
-        auto status      = stat(path.Str(), &info);
+        auto status      = ::stat(path.Str(), &info);
         if (status == -1) {
             // Can't set attributes on a nonexistent file ૮ ・ﻌ・ა
             return false;
         }
 
         if (attributes & BC_FILE_ATTRIBUTE_READONLY) {
-            status = chmod(path.Str(), 444);
+            status = ::chmod(path.Str(), 444);
         } else {
-            status = chmod(path.Str(), 511);
+            status = ::chmod(path.Str(), 511);
         }
 
         if (status != 0) {

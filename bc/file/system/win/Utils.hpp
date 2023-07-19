@@ -13,6 +13,10 @@ uint32_t AttributesToBC(DWORD dwFileAttributes);
 
 DWORD    AttributesToWin(uint32_t attributes);
 
+uint64_t UnpackFiletime(FILETIME ft);
+
+FILETIME PackFiletime(uint64_t qw);
+
 // Returns true if BY_HANDLE_FILE_INFORMATION is successfully converted to File::FileInfo.
 bool HandleFileInfoToBC(
     LPBY_HANDLE_FILE_INFORMATION  winInfo,

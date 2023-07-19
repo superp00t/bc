@@ -6,10 +6,6 @@
 
 #include <cstdint>
 
-#if defined(WHOA_SYSTEM_WIN)
-#include <windows.h>
-#endif
-
 namespace Blizzard {
 namespace Time {
 
@@ -17,17 +13,16 @@ int32_t   ToUnixTime(Timestamp timestamp);
 
 Timestamp FromUnixTime(int32_t unixTime);
 
-#if defined(WHOA_SYSTEM_WIN)
 // Win32 FILETIME to y2k
-Timestamp FromWinFiletime(FILETIME* ft);
-void      ToWinFiletime(Timestamp timestamp, FILETIME* ft);
-#endif
+Timestamp FromWinFiletime(uint64_t winTime);
+
+uint64_t ToWinFiletime(Timestamp y2k);
 
 Timestamp GetTimestamp();
 
 int32_t   GetTimeElapsed(uint32_t start, uint32_t end);
 
-Timestamp MakeTime(TimeRec& date);
+Timestamp MakeTime(const TimeRec& date);
 
 void      BreakTime(Timestamp timestamp, TimeRec& date);
 
