@@ -55,6 +55,7 @@ int32_t ToUnixTime(Timestamp timestamp) {
     return static_cast<uint32_t>(y1970 / TimeConst::TimestampsPerSecond);
 }
 
+// TODO: look into making this Y2038-aware.
 Timestamp FromUnixTime(int32_t unixTime) {
     // Convert seconds to nanoseconds
     auto unixnano  = int64_t(unixTime) * TimeConst::TimestampsPerSecond;
@@ -127,7 +128,7 @@ Timestamp MakeTime(const TimeRec& date) {
     systemTime.wSecond = static_cast<WORD>(date.sec);
     systemTime.wMilliseconds = 0;
 
-    SystemTimeToFileTime(&systemTime, &fileTime);
+    ::SystemTimeToFileTime(&systemTime, &fileTime);
 
     ULARGE_INTEGER ul = {};
     ul.HighPart = fileTime.dwHighDateTime;
@@ -153,7 +154,7 @@ Timestamp MakeTime(const TimeRec& date) {
     t.tm_sec  = date.sec;
 
     // Convert date into UNIX timestamp
-    auto unixTime  = timegm(&t);
+    auto unixTime  = ::timegm(&t);
     auto timestamp = FromUnixTime(unixTime);
     if (timestamp == -2147483648L || timestamp == 2147483647L) {
         return timestamp;
