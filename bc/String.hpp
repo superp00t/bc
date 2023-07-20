@@ -5,8 +5,6 @@
 #include <cstdlib>
 #include <cstdarg>
 
-#define BC_STRING_FORMAT_SIZE 2048
-
 #if defined(WHOA_SYSTEM_WIN)
 #define BC_FILE_SYSTEM_PATH_SEPARATOR '\\'
 #else
@@ -23,15 +21,8 @@ class QuickFormat {
     public:
         char buffer[Cap];
 
-        QuickFormat(const char* format, ...) {
-            va_list args;
-            va_start(args, format);
-            VFormat(this->buffer, Cap, format, args);
-        }
-
-        const char* Str() {
-            return static_cast<const char*>(this->buffer);
-        }
+        QuickFormat(const char* format, ...);
+        const char* Str();
 };
 
 // Functions
@@ -56,6 +47,18 @@ int32_t MemCompare(void* p1, void *p2, size_t len);
 void Translate(const char* src, char* dest, size_t destSize, const char* pattern, const char* replacement);
 
 void VFormat(char* dst, size_t capacity, const char* format, va_list args);
+
+template <size_t Cap>
+QuickFormat<Cap>::QuickFormat(const char* format, ...) {
+    va_list args;
+    va_start(args, format);
+    VFormat(this->buffer, Cap, format, args);
+}
+
+template <size_t Cap>
+const char* QuickFormat<Cap>::Str() {
+    return static_cast<const char*>(this->buffer);
+}
 
 } // namespace String
 } // namespace Blizzard

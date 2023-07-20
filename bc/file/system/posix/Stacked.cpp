@@ -248,7 +248,7 @@ bool MakeAbsolutePath(FileParms* parms) {
             auto v28 = univpath;
             auto v29 = post_slash;
             auto v27 = post_slash;
-            auto v30 = (char *)v29;
+            auto v30 = v29;
             auto v26 = found;
             while (true) {
               lab_0x1a1e94:
@@ -322,7 +322,7 @@ lab_0x1a1f09:
     char*  v50; // 0x1a1d50
     char* v51; // 0x1a1d50
     char*  v52; // 0x1a1d50
-    char v53[1025]; // bp-4152, 0x1a1d50
+    char v53[1024] = {0}; // bp-4152, 0x1a1d50
     char* v54; // 0x1a1d50
     char* v55; // 0x1a1d50
     char*  v56; // 0x1a1d50
@@ -357,7 +357,7 @@ lab_0x1a1f09:
             char*  v70 = v63; // 0x1a1d50
             char*  v71 = v63; // 0x1a1d50
             char v72 = v68; // 0x1a1f79
-            char* 73 = v18; // 0x1a1d50
+            char* v73 = v18; // 0x1a1d50
             char * v74 = v18; // 0x1a1d50
             char*  v75 = v63; // 0x1a1d50
             while (true) {
@@ -453,7 +453,7 @@ lab_0x1a1f09:
                 }
             }
         }
-      lab_0x1a209e:
+        lab_0x1a209e:
         // 0x1a209e
         String::Copy(v18, v38, parms->directorySize);
         if (v38 != nullptr && v65 != v8) {
@@ -490,7 +490,7 @@ lab_0x1a1f09:
     String::Copy(v30, v23, v31);
     goto lab_0x1a1e71;
   lab_0x1a1e71:;
-    char*  v93 = String::Find(v27, 47, parms->directorySize); // 0x1a1e89
+    char* v93 = String::Find(v27, 47, parms->directorySize); // 0x1a1e89
     v26 = v93;
     if (v93 == 0) {
         // break (via goto) -> 0x1a1f09
