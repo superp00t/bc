@@ -202,10 +202,10 @@ void BreakTime(Timestamp timestamp, TimeRec& date) {
 
 #if defined(WHOA_SYSTEM_MAC) || defined(WHOA_SYSTEM_LINUX)
     // UNIX implementation
-    auto unixTime = ToUnixTime(timestamp);
+    auto unixTime = static_cast<time_t>(ToUnixTime(timestamp));
 
     struct tm t;
-    ::gmtime_r(unixTime, &t);
+    ::gmtime_r(&unixTime, &t);
 
     date.year  = t.tm_year + 1900;
     date.month = t.tm_mon  + 1;
