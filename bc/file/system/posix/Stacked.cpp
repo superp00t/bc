@@ -240,7 +240,7 @@ bool MakeAbsolutePath(FileParms* parms) {
     auto v22 = found;
     char* v23;
     char* v24;
-    char* v25;
+    const char* v25;
 
     if (found != nullptr) {
         while (true) {
@@ -293,7 +293,7 @@ bool MakeAbsolutePath(FileParms* parms) {
 lab_0x1a1f09:
     auto v33 = String::Length(univpath); // 0x1a1f12
     if (v33 >= 3) {
-        int32_t v34 = v33 + univpath;
+        char*  v34 = v33 + univpath;
         char * v35 = (char *)(v34 - 1); // 0x1a1f26
         if (*v35 == 46) {
             // 0x1a2216
@@ -306,43 +306,42 @@ lab_0x1a1f09:
 
     // 0x1a1f2f
     char * v36; // 0x1a1d50
-    int32_t v37; // 0x1a1d50
+    char*  v37; // 0x1a1d50
     char * v38; // 0x1a1d50
-    int32_t v39; // 0x1a1d50
-    int32_t v40; // 0x1a1d50
-    int32_t v41; // 0x1a1d50
-    int32_t v42; // 0x1a1d50
-    int32_t v43; // 0x1a1d50
-    int32_t v44; // 0x1a1d50
-    int32_t v45; // 0x1a1d50
-    int32_t v46; // 0x1a1d50
-    int32_t v47; // 0x1a1d50
+    char*  v39; // 0x1a1d50
+    char*  v40; // 0x1a1d50
+    char*  v41; // 0x1a1d50
+    char*  v42; // 0x1a1d50
+    char*  v43; // 0x1a1d50
+    char*  v44; // 0x1a1d50
+    char*  v45; // 0x1a1d50
+    char*  v46; // 0x1a1d50
+    char*  v47; // 0x1a1d50
     char v48; // 0x1a1d50
-    int32_t v49; // 0x1a1d50
-    int32_t v50; // 0x1a1d50
+    char*  v49; // 0x1a1d50
+    char*  v50; // 0x1a1d50
     char* v51; // 0x1a1d50
-    int32_t v52; // 0x1a1d50
+    char*  v52; // 0x1a1d50
     char v53[1025]; // bp-4152, 0x1a1d50
     char* v54; // 0x1a1d50
     char* v55; // 0x1a1d50
-    int32_t v56; // 0x1a1d50
-    int32_t v57; // 0x1a1d50
-    int32_t v58; // 0x1a1d50
-    int32_t v59; // 0x1a1d50
-    int32_t v60; // 0x1a1f9c
+    char*  v56; // 0x1a1d50
+    char*  v57; // 0x1a1d50
+    char*  v58; // 0x1a1d50
+    char*  v59; // 0x1a1d50
+    char*  v60; // 0x1a1f9c
     char* v61; // 0x1a1d50
     if (unkflag) {
-        uint32_t v62 = parms->directorySize; // 0x1a1f3f
+        auto  v62 = parms->directorySize; // 0x1a1f3f
         char* v63; // 0x1a1d50
         char v64[1024] = {0}; // bp-3120, 0x1a1d50
-        int32_t v65; // 0x1a1d50
+        char*  v65; // 0x1a1d50
         if (v62 < 1025) {
-            int32_t v66 = ; // 0x1a1f59
-            v38 = &v64
+            v38 = &v64;
             v63 = &v64;
             v65 = &v64;
         } else {
-            int32_t v67 = Memory::Allocate((int64_t)v62); // 0x1a21f8
+            auto v67 = Memory::Allocate((int64_t)v62); // 0x1a21f8
             v38 = v67;
             v63 = v67;
             v65 = &v64;
@@ -350,17 +349,17 @@ lab_0x1a1f09:
         char v68 = *v18; // 0x1a1f79
         if (v68 == 0) {
             // 0x1a1f67
-            v37 = (int32_t)v38;
+            v37 = v38;
         } else {
             // 0x1a1f90
-            v59 = (int32_t)v38;
-            int32_t v69 = v63; // 0x1a1d50
-            int32_t v70 = v63; // 0x1a1d50
-            int32_t v71 = v63; // 0x1a1d50
+            v59 = v38;
+            char*  v69 = v63; // 0x1a1d50
+            char*  v70 = v63; // 0x1a1d50
+            char*  v71 = v63; // 0x1a1d50
             char v72 = v68; // 0x1a1f79
-            int32_t v73 = (int32_t)v18; // 0x1a1d50
+            char* 73 = v18; // 0x1a1d50
             char * v74 = v18; // 0x1a1d50
-            int32_t v75 = v63; // 0x1a1d50
+            char*  v75 = v63; // 0x1a1d50
             while (true) {
                 // 0x1a1f90
                 v39 = v69;
@@ -372,15 +371,15 @@ lab_0x1a1f09:
                 v49 = v73;
                 while (true) {
                   lab_0x1a1f90:;
-                    int32_t v76 = v56;
-                    int32_t v77 = v41;
-                    int32_t v78 = v40;
-                    int32_t v79 = v39;
+                    char*  v76 = v56;
+                    char*  v77 = v41;
+                    char*  v78 = v40;
+                    char*  v79 = v39;
                     char v80 = v48; // 0x1a1f95
-                    int32_t v81 = v49;
-                    int32_t v82 = v81; // 0x1a1f92
+                    char*  v81 = v49;
+                    char*  v82 = v81; // 0x1a1f92
                     while (v80 != 47) {
-                        int32_t v83 = v81 + 1; // 0x1a1f94
+                        char*  v83 = v81 + 1; // 0x1a1f94
                         v80 = *(char *)v83;
                         v82 = v83;
                         if (v80 == 0) {
@@ -393,11 +392,11 @@ lab_0x1a1f09:
                     // 0x1a1f9c
                     v50 = v82;
                     v60 = v50 + 1;
-                    int32_t v84 = v60 - (int32_t)v55; // 0x1a1fa7
+                    char*  v84 = v60 - v55; // 0x1a1fa7
                     String::Copy((char *)v76, v55, (int64_t)(v84 + 1));
-                    uint32_t v85 = *v2; // 0x1a1fd2
+                    uchar*  v85 = *v2; // 0x1a1fd2
                     char * v86 = (char *)v53; // 0x1a1fe0
-                    int32_t v87 = &v53; // 0x1a1fe0
+                    char*  v87 = &v53; // 0x1a1fe0
                     if (v85 >= 1025) {
                         // 0x1a216d
                         v87 = Memory::Allocate((int64_t)v85);
@@ -414,7 +413,7 @@ lab_0x1a1f09:
                         v57 = v84 + v76;
                         goto lab_0x1a2062;
                     } else {
-                        int32_t v88 = *v2; // 0x1a2014
+                        char*  v88 = *v2; // 0x1a2014
                         String::Copy((char *)v78, v54, (int64_t)v88);
                         v61 = (char *)v50;
                         char v89 = *v61; // 0x1a2033
@@ -456,13 +455,13 @@ lab_0x1a1f09:
         }
       lab_0x1a209e:
         // 0x1a209e
-        String::Copy(v18, v38, parms->dirrectorySize);
-        if (v38 != nullptr && v65 != v37) {
+        String::Copy(v18, v38, parms->directorySize);
+        if (v38 != nullptr && v65 != v8) {
             // 0x1a20d5
-            Memory::Free((int32_t *)v38);
+            Memory::Free(v38);
         }
     }
-    String::Copy(parms->directory, v18, parms->dirrectorySize);
+    String::Copy(parms->directory, v18, parms->directorySize);
     if (basepath != basepathfast && basepath != nullptr) {
         // 0x1a211d
         Memory::Free(basepath);
@@ -473,7 +472,7 @@ lab_0x1a1f09:
     }
 
     // // Stack fail guard
-    // int32_t v92 = *(int32_t *)*(int32_t *)0x163946c; // 0x1a214f
+    // char*  v92 = *(int32_t *)*(int32_t *)0x163946c; // 0x1a214f
     // if (*(int32_t *)*(int32_t *)0x163946c != v92) {
     //     // 0x1a2229
     //     return function_143e456();
@@ -482,7 +481,7 @@ lab_0x1a1f09:
     return *(char *)*v90 != 0;
   lab_0x1a1e60:
     // 0x1a1e60
-    v31 = parms->dirrectorySize;
+    v31 = parms->directorySize;
     if (v28 > v13 != (v29 == v25)) {
         // break -> 0x1a1e71
         goto lab_0x1a1e71_2;
@@ -491,7 +490,7 @@ lab_0x1a1f09:
     String::Copy(v30, v23, v31);
     goto lab_0x1a1e71;
   lab_0x1a1e71:;
-    int32_t v93 = String::Find(v27, 47, parms->dirrectorySize); // 0x1a1e89
+    char*  v93 = String::Find(v27, 47, parms->directorySize); // 0x1a1e89
     v26 = v93;
     if (v93 == 0) {
         // break (via goto) -> 0x1a1f09
