@@ -238,10 +238,12 @@ bool MakeAbsolutePath(FileParms* parms) {
     auto found = String::Find(post_slash, '/', parms->directorySize);
 
     auto v22 = found;
+    char* v18 = basepath;
     char* v23;
     const char* v24 = post_slash;
     const char* v25 = univpath;
-    const char* v26 = 0;
+    const char* v26 = nullptr;
+    const char* v27 = nullptr;
     const char* v28;
     const char* v29;
     const char* v30;
@@ -357,6 +359,7 @@ lab_0x1a1f09:
     char v80; // 0x1a1f95
     char*  v81;
     char*  v82; // 0x1a1f92
+    char*  v83;
     char*  v84;
     size_t v85;
     size_t v86;
@@ -373,7 +376,7 @@ lab_0x1a1f09:
             v63 = v64;
             v65 = v64;
         } else {
-            v67 = Memory::Allocate((int64_t)v62); // 0x1a21f8
+            v67 = reinterpret_cast<char*>(Memory::Allocate((int64_t)v62)); // 0x1a21f8
             v38 = v67;
             v63 = v67;
             v65 = v64;
