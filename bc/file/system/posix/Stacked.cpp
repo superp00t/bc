@@ -239,17 +239,23 @@ bool MakeAbsolutePath(FileParms* parms) {
 
     auto v22 = found;
     char* v23;
-    char* v24;
-    const char* v25;
+    const char* v24 = post_slash;
+    const char* v25 = univpath;
+    const char* v26 = 0;
+    const char* v28;
+    const char* v29;
+    const char* v30;
+    size_t v31;
+    char v32;
 
     if (found != nullptr) {
         while (true) {
             // 0x1a1e94
-            auto v28 = univpath;
-            auto v29 = post_slash;
-            auto v27 = post_slash;
-            auto v30 = v29;
-            auto v26 = found;
+            v28 = univpath;
+            v29 = post_slash;
+            v27 = post_slash;
+            v30 = v29;
+            v26 = found;
             while (true) {
               lab_0x1a1e94:
                 // 0x1a1e94
@@ -259,7 +265,7 @@ bool MakeAbsolutePath(FileParms* parms) {
                 if (*v23 != 46) {
                     goto lab_0x1a1e60;
                 } else {
-                    char v32 = *(v25 + 2); // 0x1a1e9d
+                    v32 = *(v25 + 2); // 0x1a1e9d
                     if (v32 == 46) {
                         // 0x1a1ec7
                         if (*(v25 + 3) != 47) {
@@ -305,61 +311,87 @@ lab_0x1a1f09:
     }
 
     // 0x1a1f2f
-    char * v36; // 0x1a1d50
-    char*  v37; // 0x1a1d50
-    char * v38; // 0x1a1d50
-    char*  v39; // 0x1a1d50
-    char*  v40; // 0x1a1d50
-    char*  v41; // 0x1a1d50
-    char*  v42; // 0x1a1d50
-    char*  v43; // 0x1a1d50
-    char*  v44; // 0x1a1d50
-    char*  v45; // 0x1a1d50
-    char*  v46; // 0x1a1d50
-    char*  v47; // 0x1a1d50
-    char v48; // 0x1a1d50
-    char*  v49; // 0x1a1d50
-    char*  v50; // 0x1a1d50
-    char* v51; // 0x1a1d50
-    char*  v52; // 0x1a1d50
+    char * v36;
+    char*  v37;
+    char * v38;
+    char*  v39;
+    char*  v40;
+    char*  v41;
+    char*  v42;
+    char*  v43;
+    char*  v44;
+    char*  v45;
+    char*  v46;
+    char*  v47;
+    char v48;
+    char*  v49;
+    char*  v50;
+    char* v51;
+    char*  v52;
     char v53[1024] = {0}; // bp-4152, 0x1a1d50
-    char* v54; // 0x1a1d50
-    char* v55; // 0x1a1d50
-    char*  v56; // 0x1a1d50
-    char*  v57; // 0x1a1d50
-    char*  v58; // 0x1a1d50
-    char*  v59; // 0x1a1d50
+    char* v54;
+    char* v55;
+    char*  v56;
+    char*  v57;
+    char*  v58;
+    char*  v59;
     char*  v60; // 0x1a1f9c
-    char* v61; // 0x1a1d50
+    char* v61;
+    size_t v62;
+    char*  v63;
+    char v64[1024] = {0}; // bp-3120, 0x1a1d50
+    char* v65;
+    void* v67;
+    char  v68;
+    char*  v69;
+    char*  v70;
+    char*  v71;
+    char v72; // 0x1a1f79
+    char* v73;
+    char * v74;
+    char*  v75;
+    char*  v76;
+    char*  v77;
+    char*  v78;
+    char*  v79;
+    char v80; // 0x1a1f95
+    char*  v81;
+    char*  v82; // 0x1a1f92
+    char*  v84;
+    size_t v85;
+    size_t v86;
+    char*  v87;
+    char   v89;
+    char v95;
+
     if (unkflag) {
-        auto  v62 = parms->directorySize; // 0x1a1f3f
-        char* v63; // 0x1a1d50
-        char v64[1024] = {0}; // bp-3120, 0x1a1d50
-        char*  v65; // 0x1a1d50
+        v62 = parms->directorySize; // 0x1a1f3f
+        char* v63;
+        char*  v65;
         if (v62 < 1025) {
-            v38 = &v64;
-            v63 = &v64;
-            v65 = &v64;
+            v38 = v64;
+            v63 = v64;
+            v65 = v64;
         } else {
-            auto v67 = Memory::Allocate((int64_t)v62); // 0x1a21f8
+            v67 = Memory::Allocate((int64_t)v62); // 0x1a21f8
             v38 = v67;
             v63 = v67;
-            v65 = &v64;
+            v65 = v64;
         }
-        char v68 = *v18; // 0x1a1f79
+        v68 = *v18; // 0x1a1f79
         if (v68 == 0) {
             // 0x1a1f67
             v37 = v38;
         } else {
             // 0x1a1f90
             v59 = v38;
-            char*  v69 = v63; // 0x1a1d50
-            char*  v70 = v63; // 0x1a1d50
-            char*  v71 = v63; // 0x1a1d50
-            char v72 = v68; // 0x1a1f79
-            char* v73 = v18; // 0x1a1d50
-            char * v74 = v18; // 0x1a1d50
-            char*  v75 = v63; // 0x1a1d50
+            v69 = v63;
+            v70 = v63;
+            v71 = v63;
+            v72 = v68; // 0x1a1f79
+            v73 = v18;
+            v74 = v18;
+            v75 = v63;
             while (true) {
                 // 0x1a1f90
                 v39 = v69;
@@ -371,15 +403,15 @@ lab_0x1a1f09:
                 v49 = v73;
                 while (true) {
                   lab_0x1a1f90:;
-                    char*  v76 = v56;
-                    char*  v77 = v41;
-                    char*  v78 = v40;
-                    char*  v79 = v39;
-                    char v80 = v48; // 0x1a1f95
-                    char*  v81 = v49;
-                    char*  v82 = v81; // 0x1a1f92
+                    v76 = v56;
+                    v77 = v41;
+                    v78 = v40;
+                    v79 = v39;
+                    v80 = v48; // 0x1a1f95
+                    v81 = v49;
+                    v82 = v81; // 0x1a1f92
                     while (v80 != 47) {
-                        char*  v83 = v81 + 1; // 0x1a1f94
+                        v83 = v81 + 1; // 0x1a1f94
                         v80 = *(char *)v83;
                         v82 = v83;
                         if (v80 == 0) {
@@ -392,15 +424,15 @@ lab_0x1a1f09:
                     // 0x1a1f9c
                     v50 = v82;
                     v60 = v50 + 1;
-                    char*  v84 = v60 - v55; // 0x1a1fa7
+                    v84 = v60 - v55; // 0x1a1fa7
                     String::Copy((char *)v76, v55, (int64_t)(v84 + 1));
-                    uchar*  v85 = *v2; // 0x1a1fd2
-                    char * v86 = (char *)v53; // 0x1a1fe0
-                    char*  v87 = &v53; // 0x1a1fe0
+                    v85 = parms->directorySize; // 0x1a1fd2
+                    v86 = v53; // 0x1a1fe0
+                    v87 = &v53; // 0x1a1fe0
                     if (v85 >= 1025) {
                         // 0x1a216d
                         v87 = Memory::Allocate((int64_t)v85);
-                        v86 = (char *)v87;
+                        v86 = v87;
                     }
                     // 0x1a1ff4
                     v54 = v86;
@@ -413,10 +445,10 @@ lab_0x1a1f09:
                         v57 = v84 + v76;
                         goto lab_0x1a2062;
                     } else {
-                        char*  v88 = *v2; // 0x1a2014
-                        String::Copy((char *)v78, v54, (int64_t)v88);
+                        v88 = parms->directorySize;
+                        String::Copy((char *)v78, v54, parms->directorySize);
                         v61 = (char *)v50;
-                        char v89 = *v61; // 0x1a2033
+                        v89 = *v61; // 0x1a2033
                         if (v89 == 47) {
                             // 0x1a2186
                             File::Path::ForceTrailingSeparator((char *)v79, *v2, 47);
@@ -471,13 +503,7 @@ lab_0x1a1f09:
         Memory::Free(univpath);
     }
 
-    // // Stack fail guard
-    // char*  v92 = *(int32_t *)*(int32_t *)0x163946c; // 0x1a214f
-    // if (*(int32_t *)*(int32_t *)0x163946c != v92) {
-    //     // 0x1a2229
-    //     return function_143e456();
-    // }
-    // // 0x1a2157
+    // Stack fail guard
     return *(char *)*v90 != 0;
   lab_0x1a1e60:
     // 0x1a1e60
@@ -512,7 +538,7 @@ lab_0x1a1f09:
     }
     // 0x1a208b
     Memory::Free((int32_t *)v54);
-    char v95 = *(char *)v52; // 0x1a2093
+    v95 = *(char *)v52; // 0x1a2093
     v39 = v46;
     v40 = v47;
     v41 = v45;
