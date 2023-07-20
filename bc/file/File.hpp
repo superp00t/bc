@@ -24,6 +24,8 @@ bool IsFile(const char* path);
 
 bool IsDirectory(const char* path);
 
+bool IsAbsolutePath(const char* path);
+
 bool      GetFileInfo(const char* path, FileInfo* info);
 bool      GetFileInfo(StreamRecord* stream, FileInfo* info);
 FileInfo* GetFileInfo(StreamRecord* stream);

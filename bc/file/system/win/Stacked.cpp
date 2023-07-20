@@ -727,7 +727,7 @@ bool SetPos(FileParms* parms) {
     auto offsetLow  = static_cast<LONG>(offset);
     auto offsetHigh = static_cast<LONG>(offset >> 32);
 
-    DWORD res = SetFilePointer(file->filehandle, offsetLow, &offsetHigh, static_cast<DWORD>(whence));
+    DWORD res = ::SetFilePointer(file->filehandle, offsetLow, &offsetHigh, static_cast<DWORD>(whence));
     if (res == INVALID_SET_FILE_POINTER) {
         res = GetLastError();
         if (res != 0) {

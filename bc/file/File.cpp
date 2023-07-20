@@ -82,6 +82,17 @@ bool Delete(const char* path) {
     return status;
 }
 
+bool IsAbsolutePath(const char* path) {
+    auto manager = System_File::Stacked::Manager();
+    if (!manager) {
+        return false;
+    }
+
+    System_File::Stacked::FileParms parms = {};
+    parms.filename = path;
+    return manager->Do(Filesystem::Call::IsAbsolutePath, &parms);
+}
+
 // Get file information about path, writing information to the passed info pointer.
 bool GetFileInfo(const char* path, FileInfo* info) {
     auto manager = System_File::Stacked::Manager();

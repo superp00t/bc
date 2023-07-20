@@ -206,7 +206,8 @@ bool MakeAbsolutePath(FileParms* parms) {
 
     BC_FILE_PATH(basepathfast);
     BC_FILE_PATH(univpathfast);
-    const char* basepath;
+    char* basepath = nullptr;
+    char* univpath = nullptr;
 
     if (parms->directorySize < BC_FILE_MAX_PATH) {
         basepath = basepathfast;
@@ -237,6 +238,9 @@ bool MakeAbsolutePath(FileParms* parms) {
     auto found = String::Find(post_slash, '/', parms->directorySize);
 
     auto v22 = found;
+    char* v23;
+    char* v24;
+    char* v25;
 
     if (found != nullptr) {
         while (true) {
@@ -278,7 +282,7 @@ bool MakeAbsolutePath(FileParms* parms) {
             }
           lab_0x1a1e71_2:
             // 0x1a1e71
-            v22 = String::Find(v23, 47, v31);
+            v22 = String::Find(v23, 47, parms->directorySize);
             if (v22 == 0) {
                 // break -> 0x1a1f09
                 break;
@@ -316,30 +320,30 @@ lab_0x1a1f09:
     char v48; // 0x1a1d50
     int32_t v49; // 0x1a1d50
     int32_t v50; // 0x1a1d50
-    char * v51; // 0x1a1d50
+    char* v51; // 0x1a1d50
     int32_t v52; // 0x1a1d50
     char v53[1025]; // bp-4152, 0x1a1d50
-    char * v54; // 0x1a1d50
-    char * v55; // 0x1a1d50
+    char* v54; // 0x1a1d50
+    char* v55; // 0x1a1d50
     int32_t v56; // 0x1a1d50
     int32_t v57; // 0x1a1d50
     int32_t v58; // 0x1a1d50
     int32_t v59; // 0x1a1d50
     int32_t v60; // 0x1a1f9c
-    char * v61; // 0x1a1d50
+    char* v61; // 0x1a1d50
     if (unkflag) {
         uint32_t v62 = parms->directorySize; // 0x1a1f3f
-        int32_t v63; // 0x1a1d50
-        int32_t v64; // bp-3120, 0x1a1d50
+        char* v63; // 0x1a1d50
+        char v64[1024] = {0}; // bp-3120, 0x1a1d50
         int32_t v65; // 0x1a1d50
         if (v62 < 1025) {
-            int32_t v66 = &v64; // 0x1a1f59
-            v38 = (char *)&v64;
-            v63 = v66;
-            v65 = v66;
+            int32_t v66 = ; // 0x1a1f59
+            v38 = &v64
+            v63 = &v64;
+            v65 = &v64;
         } else {
             int32_t v67 = Memory::Allocate((int64_t)v62); // 0x1a21f8
-            v38 = (char *)v67;
+            v38 = v67;
             v63 = v67;
             v65 = &v64;
         }
@@ -392,7 +396,7 @@ lab_0x1a1f09:
                     int32_t v84 = v60 - (int32_t)v55; // 0x1a1fa7
                     String::Copy((char *)v76, v55, (int64_t)(v84 + 1));
                     uint32_t v85 = *v2; // 0x1a1fd2
-                    char * v86 = (char *)&v53; // 0x1a1fe0
+                    char * v86 = (char *)v53; // 0x1a1fe0
                     int32_t v87 = &v53; // 0x1a1fe0
                     if (v85 >= 1025) {
                         // 0x1a216d
@@ -452,13 +456,13 @@ lab_0x1a1f09:
         }
       lab_0x1a209e:
         // 0x1a209e
-        String::Copy(v18, v38, (int64_t)*v2);
+        String::Copy(v18, v38, parms->dirrectorySize);
         if (v38 != nullptr && v65 != v37) {
             // 0x1a20d5
             Memory::Free((int32_t *)v38);
         }
     }
-    String::Copy(parms->directory, v18, (int64_t)*v2);
+    String::Copy(parms->directory, v18, parms->dirrectorySize);
     if (basepath != basepathfast && basepath != nullptr) {
         // 0x1a211d
         Memory::Free(basepath);
@@ -478,7 +482,7 @@ lab_0x1a1f09:
     return *(char *)*v90 != 0;
   lab_0x1a1e60:
     // 0x1a1e60
-    v31 = (int64_t)*v2;
+    v31 = parms->dirrectorySize;
     if (v28 > v13 != (v29 == v25)) {
         // break -> 0x1a1e71
         goto lab_0x1a1e71_2;
@@ -487,7 +491,7 @@ lab_0x1a1f09:
     String::Copy(v30, v23, v31);
     goto lab_0x1a1e71;
   lab_0x1a1e71:;
-    int32_t v93 = String::Find(v27, 47, (int64_t)*v2); // 0x1a1e89
+    int32_t v93 = String::Find(v27, 47, parms->dirrectorySize); // 0x1a1e89
     v26 = v93;
     if (v93 == 0) {
         // break (via goto) -> 0x1a1f09
