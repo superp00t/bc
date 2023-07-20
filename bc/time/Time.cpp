@@ -6,7 +6,7 @@
 #endif
 
 #if defined(WHOA_SYSTEM_MAC) || defined(WHOA_SYSTEM_LINUX)
-
+#include <ctime>
 #endif
 
 namespace Blizzard {

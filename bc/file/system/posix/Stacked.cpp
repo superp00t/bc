@@ -6,7 +6,6 @@
 
 #include <cerrno>
 #include <cstdio>
-#include <ctime>
 #include <dirent.h>
 #include <fcntl.h>
 #include <sys/stat.h>
