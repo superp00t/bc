@@ -215,11 +215,11 @@ bool makeUNCPath(const char* path, char* result, size_t capacity) {
         }
 
         if (path[i] == '\0') {
-            result[i] = '\0';
+            result[r] = '\0';
             return true;
         }
 
-        result[i] = path[i] == '/' ? '\\' : path[i];
+        result[r] = path[i] == '/' ? '\\' : path[i];
         r++;
         i++;
     }

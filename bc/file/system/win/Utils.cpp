@@ -3,6 +3,7 @@
 
 #include <windows.h>
 
+namespace Blizzard {
 namespace winfileutil {
 
 // Translate Win32 file bits into Blizzard file bits.
@@ -167,3 +168,4 @@ HANDLE Open(const char* systemPath, uint32_t flags, bool nocache) {
 }
 
 } // namespace winfileutil
+} // namespace Blizzard

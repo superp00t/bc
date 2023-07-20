@@ -6,6 +6,7 @@
 #include <windows.h>
 #include <cstdint>
 
+namespace Blizzard {
 namespace winfileutil {
 
 // Translate Win32 file bits into Blizzard file bits.
@@ -29,6 +30,7 @@ bool AttributeFileInfoToBC(
 
 HANDLE Open(const char* systemPath, uint32_t flags, bool nocache);
 
-};
+} // namespace winfileutil
+} // namespace Blizzard
 
 #endif

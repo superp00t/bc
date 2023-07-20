@@ -7,18 +7,6 @@
 namespace Blizzard {
 namespace String {
 
-template <size_t Cap>
-QuickFormat<Cap>::QuickFormat(const char* format, ...) {
-    va_list args;
-    va_start(args, format);
-    VFormat(this->buffer, Cap, format, args);
-}
-
-template <size_t Cap>
-const char* QuickFormat<Cap>::Str() {
-    return static_cast<const char*>(this->buffer);
-}
-
 int32_t Append(char* buf, const char* append, size_t cap) {
     const char* dx = nullptr;
     int bytesAppended = 0;

@@ -236,7 +236,11 @@ bool GetPos(FileParms* parms) {
         return false;
     }
 
-    parms->position = static_cast<int64_t>(low) | (static_cast<int64_t>(high) << 32LL);
+    ULARGE_INTEGER ul = {};
+    ul.LowPart  = low;
+    ul.HighPart = high;
+
+    parms->position = ul.QuadPart;
     return true;
 }
 
@@ -402,9 +406,9 @@ bool CreateDirectory(FileParms* parms) {
 
         String::Copy(temp, path, 300);
 
-        if (GetFileAttributes(temp) == INVALID_FILE_ATTRIBUTES) {
+        if (::GetFileAttributes(temp) == INVALID_FILE_ATTRIBUTES) {
             if (!::CreateDirectory(temp, nullptr)) {
-                if (GetLastError() != ERROR_ALREADY_EXISTS) {
+                if (::GetLastError() != ERROR_ALREADY_EXISTS) {
                     return false;
                 }
             }
@@ -421,7 +425,7 @@ bool Move(FileParms* parms) {
     File::Path::QuickNative sourceNative(source);
     File::Path::QuickNative destinationNative(destination);
 
-    BOOL ok = MoveFile(sourceNative.Str(), destinationNative.Str());
+    BOOL ok = ::MoveFile(sourceNative.Str(), destinationNative.Str());
 
     return ok != 0;
 }
@@ -431,10 +435,6 @@ bool Copy(FileParms* parms) {
     auto destination = parms->destination;
 
     auto overwrite = parms->flag;
-
-    // Set up native paths
-    File::Path::QuickNative source(parms->filename);
-    File::Path::QuickNative destination(parms->destination);
 
     // file pointers
     File::StreamRecord* st_source      = nullptr;
@@ -509,10 +509,11 @@ bool Copy(FileParms* parms) {
 }
 
 bool Open(FileParms* parms) {
+    // Path convert
     auto path = parms->filename;
-
     File::Path::QuickNative pathNative(path);
 
+    // Open file HANDLE
     auto   flags   =  parms->flag;
     bool   nocache  = parms->mode & File::Mode::nocache;
     HANDLE handle   = winfileutil::Open(pathNative.Str(), flags, nocache);
@@ -520,29 +521,27 @@ bool Open(FileParms* parms) {
     if (handle == INVALID_HANDLE_VALUE) {
         DWORD err = 0;
         if (err = GetLastError()) {
-            BC_FILE_SET_ERROR_MSG(BC_FILE_ERROR_GENERIC_FAILURE, "Win32 Open - 0x%08x - %s", err, pathNative.Str());
+            BC_FILE_SET_ERROR_MSG(BC_FILE_ERROR_GENERIC_FAILURE, "Win32 Open %s", parms->filename);
         }
         return false;
     }
 
     // Successfully opened file handle. Allocate StreamRecord + path str at the end.
     auto recordSize = (sizeof(File::StreamRecord) - File::StreamRecord::s_padPath) + (1 + pathNative.Size());
-
-    auto fileData = Memory::Allocate(recordSize);
+    auto fileData   = Memory::Allocate(recordSize);
+    // Memory could not be allocated
     if (fileData == nullptr) {
         BC_FILE_SET_ERROR(BC_FILE_ERROR_OOM);
         return false;
     }
-
+    // Clear extra data
     String::MemFill(fileData, recordSize, 0);
 
+    // Populate fields
     auto file = reinterpret_cast<File::StreamRecord*>(fileData);
-
     file->flags      = flags;
     file->filehandle = handle;
-
     String::Copy(file->path, path, pathNative.Size());
-
     File::GetFileInfo(file);
 
     parms->stream = file;
@@ -659,7 +658,7 @@ bool SetEOF(FileParms* parms) {
         return false;
     }
 
-    BOOL b = SetEndOfFile(file->filehandle);
+    BOOL b = ::SetEndOfFile(file->filehandle);
 
     if (!b) {
         BC_FILE_SET_ERROR_MSG(4, "Win32 SetEOF - %s", file->path);
@@ -678,11 +677,11 @@ bool SetAttributes(FileParms* parms) {
         return false;
     }
 
-    auto       mode       = parms->mode;
-    auto       attributes = info->attributes;
-    int32_t    status     = 0;
-    auto       file       = parms->stream;
-    auto       path       = parms->filename;
+    auto    mode       = parms->mode;
+    auto    attributes = info->attributes;
+    int32_t status     = 0;
+    auto    file       = parms->stream;
+    auto    path       = parms->filename;
 
     if (mode & File::Mode::settimes) {
         auto modTime = info->modificationTime;
@@ -701,7 +700,7 @@ bool SetAttributes(FileParms* parms) {
 
         DWORD dwAttributes = winfileutil::AttributesToWin(info->attributes);
 
-        BOOL ok = SetFileAttributes(pathNative.Str(), dwAttributes);
+        BOOL ok = ::SetFileAttributes(pathNative.Str(), dwAttributes);
 
         if (!ok) {
             BC_FILE_SET_ERROR(BC_FILE_ERROR_INVALID_ARGUMENT);

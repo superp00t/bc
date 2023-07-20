@@ -23,8 +23,15 @@ class QuickFormat {
     public:
         char buffer[Cap];
 
-        QuickFormat(const char* format, ...);
-        const char* Str();
+        QuickFormat(const char* format, ...) {
+            va_list args;
+            va_start(args, format);
+            VFormat(this->buffer, Cap, format, args);
+        }
+
+        const char* Str() {
+            return static_cast<const char*>(this->buffer);
+        }
 };
 
 // Functions

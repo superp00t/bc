@@ -30,6 +30,8 @@ FileInfo* GetFileInfo(StreamRecord* stream);
 
 bool GetWorkingDirectory(char* path, size_t capacity);
 
+bool MakeAbsolutePath(const char* rel, char* result, int32_t capacity, bool unkflag);
+
 bool Open(const char* filename, uint32_t flags, StreamRecord*& stream);
 
 bool Close(StreamRecord* stream);

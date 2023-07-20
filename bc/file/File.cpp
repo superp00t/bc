@@ -148,6 +148,22 @@ FileInfo* GetFileInfo(StreamRecord* stream) {
     return &s_noinfo;
 }
 
+bool MakeAbsolutePath(const char* rel, char* result, int32_t capacity, bool unkflag) {
+    auto manager = System_File::Stacked::Manager();
+    if (!manager) {
+        return false;
+    }
+
+    System_File::Stacked::FileParms parms = {};
+
+    parms.filename      = rel;
+    parms.flag          = unkflag;
+    parms.directory     = result;
+    parms.directorySize = capacity;
+
+    return manager->Do(Filesystem::Call::MakeAbsolutePath, &parms);
+}
+
 // Open a filename according to flags (see Defines.hpp)
 // if successful, will return true and referenced file object will be set
 bool Open(const char* filename, uint32_t flags, StreamRecord*& file) {

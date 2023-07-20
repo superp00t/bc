@@ -123,7 +123,7 @@ bool GetFreeSpace(FileParms* parms) {
     File::Path::QuickNative dirpathNative(dirpath);
 
     struct statvfs sv;
-    if (statvfs(dirpathNative.Str(), &sv) != 0) {
+    if (::statvfs(dirpathNative.Str(), &sv) != 0) {
         BC_FILE_SET_ERROR_MSG(BC_FILE_ERROR_INVALID_ARGUMENT, "Posix GetFreeSpace - %s", dirpath);
         return false;
     }
@@ -140,7 +140,7 @@ bool ProcessDirFast(FileParms* parms) {
     File::ProcessDirCallback callback = parms->callback;
 
     // Open directory
-    auto directory = opendir(dirpathNative.Str());
+    auto directory = ::opendir(dirpathNative.Str());
     if (!directory) {
         BC_FILE_SET_ERROR(BC_FILE_ERROR_INVALID_ARGUMENT);
         return false;
@@ -158,7 +158,7 @@ bool ProcessDirFast(FileParms* parms) {
 
     struct dirent* ent = nullptr;
 
-    while ((ent = readdir(directory)) != nullptr) {
+    while ((ent = ::readdir(directory)) != nullptr) {
         String::Copy(name, ent->d_name, 256);
 
         auto isDotCurrent = (name[0] == '.' && name[1] == '\0');
@@ -200,18 +200,338 @@ bool IsReadOnly(FileParms* parms) {
     return false;
 }
 
+// realpath() based
 bool MakeAbsolutePath(FileParms* parms) {
-    // char wd[BC_FILE_MAX_PATH]     = {0};
-    // char buffer[BC_FILE_MAX_PATH] = {0};
-    // auto name                                 = parms->filename;
+    auto unkflag = parms->flag;
 
+    BC_FILE_PATH(basepathfast);
+    BC_FILE_PATH(univpathfast);
+    const char* basepath;
 
-    // if (!File::IsAbsolutePath(name)) {
-    //     // If the path is not absolute already, pack current working dir to the base path.
-    //     File::GetWorkingDirectory(basepath, parms->directorySize);
+    if (parms->directorySize < BC_FILE_MAX_PATH) {
+        basepath = basepathfast;
+    } else {
+        basepath = reinterpret_cast<char*>(Memory::Allocate(parms->directorySize));
+    }
 
-    //     // Force a slash to the end of the base path, so that we can append univpath
-    //     String::ForceTrailingSeparator(basepath, parms->directorySize, BC_FILE_SYSTEM_PATH_SEPARATOR);
+    if (!File::IsAbsolutePath(parms->filename)) {
+        // If the path is not absolute already, pack current working dir to the base path.
+        File::GetWorkingDirectory(basepath, parms->directorySize);
+
+        // Force a slash to the end of the base path, so that we can append univpath
+        File::Path::ForceTrailingSeparator(basepath, parms->directorySize, BC_FILE_SYSTEM_PATH_SEPARATOR);
+    }
+
+    String::Append(basepath, parms->filename, parms->directorySize);
+
+    if (parms->directorySize < BC_FILE_MAX_PATH+1) {
+        univpath = univpathfast;
+    } else {
+        univpath = reinterpret_cast<char*>(Memory::Allocate(parms->directorySize));
+    }
+
+    File::Path::MakeNativePath(basepath, univpath, parms->directorySize);
+
+    auto post_slash = univpath + 1;
+
+    auto found = String::Find(post_slash, '/', parms->directorySize);
+
+    auto v22 = found;
+
+    if (found != nullptr) {
+        while (true) {
+            // 0x1a1e94
+            auto v28 = univpath;
+            auto v29 = post_slash;
+            auto v27 = post_slash;
+            auto v30 = (char *)v29;
+            auto v26 = found;
+            while (true) {
+              lab_0x1a1e94:
+                // 0x1a1e94
+                v25 = v26;
+                v24 = v25 + 1;
+                v23 = (char *)v24;
+                if (*v23 != 46) {
+                    goto lab_0x1a1e60;
+                } else {
+                    char v32 = *(v25 + 2); // 0x1a1e9d
+                    if (v32 == 46) {
+                        // 0x1a1ec7
+                        if (*(v25 + 3) != 47) {
+                            goto lab_0x1a1e60;
+                        } else {
+                            // 0x1a1ecd
+                            String::Copy(v27, (v25 + 4), parms->directorySize);
+                            goto lab_0x1a1e71;
+                        }
+                    } else {
+                        if (v32 != 47) {
+                            goto lab_0x1a1e60;
+                        } else {
+                            // 0x1a1ea9
+                            String::Copy(v23, (char *)(v25 + 3), parms->directorySize);
+                            goto lab_0x1a1e71;
+                        }
+                    }
+                }
+            }
+          lab_0x1a1e71_2:
+            // 0x1a1e71
+            v22 = String::Find(v23, 47, v31);
+            if (v22 == 0) {
+                // break -> 0x1a1f09
+                break;
+            }
+        }
+    }
+
+lab_0x1a1f09:
+    auto v33 = String::Length(univpath); // 0x1a1f12
+    if (v33 >= 3) {
+        int32_t v34 = v33 + univpath;
+        char * v35 = (char *)(v34 - 1); // 0x1a1f26
+        if (*v35 == 46) {
+            // 0x1a2216
+            if (*(char *)(v34 - 2) == 47) {
+                // 0x1a2221
+                *v35 = 0;
+            }
+        }
+    }
+
+    // 0x1a1f2f
+    char * v36; // 0x1a1d50
+    int32_t v37; // 0x1a1d50
+    char * v38; // 0x1a1d50
+    int32_t v39; // 0x1a1d50
+    int32_t v40; // 0x1a1d50
+    int32_t v41; // 0x1a1d50
+    int32_t v42; // 0x1a1d50
+    int32_t v43; // 0x1a1d50
+    int32_t v44; // 0x1a1d50
+    int32_t v45; // 0x1a1d50
+    int32_t v46; // 0x1a1d50
+    int32_t v47; // 0x1a1d50
+    char v48; // 0x1a1d50
+    int32_t v49; // 0x1a1d50
+    int32_t v50; // 0x1a1d50
+    char * v51; // 0x1a1d50
+    int32_t v52; // 0x1a1d50
+    char v53[1025]; // bp-4152, 0x1a1d50
+    char * v54; // 0x1a1d50
+    char * v55; // 0x1a1d50
+    int32_t v56; // 0x1a1d50
+    int32_t v57; // 0x1a1d50
+    int32_t v58; // 0x1a1d50
+    int32_t v59; // 0x1a1d50
+    int32_t v60; // 0x1a1f9c
+    char * v61; // 0x1a1d50
+    if (unkflag) {
+        uint32_t v62 = parms->directorySize; // 0x1a1f3f
+        int32_t v63; // 0x1a1d50
+        int32_t v64; // bp-3120, 0x1a1d50
+        int32_t v65; // 0x1a1d50
+        if (v62 < 1025) {
+            int32_t v66 = &v64; // 0x1a1f59
+            v38 = (char *)&v64;
+            v63 = v66;
+            v65 = v66;
+        } else {
+            int32_t v67 = Memory::Allocate((int64_t)v62); // 0x1a21f8
+            v38 = (char *)v67;
+            v63 = v67;
+            v65 = &v64;
+        }
+        char v68 = *v18; // 0x1a1f79
+        if (v68 == 0) {
+            // 0x1a1f67
+            v37 = (int32_t)v38;
+        } else {
+            // 0x1a1f90
+            v59 = (int32_t)v38;
+            int32_t v69 = v63; // 0x1a1d50
+            int32_t v70 = v63; // 0x1a1d50
+            int32_t v71 = v63; // 0x1a1d50
+            char v72 = v68; // 0x1a1f79
+            int32_t v73 = (int32_t)v18; // 0x1a1d50
+            char * v74 = v18; // 0x1a1d50
+            int32_t v75 = v63; // 0x1a1d50
+            while (true) {
+                // 0x1a1f90
+                v39 = v69;
+                v40 = v70;
+                v41 = v71;
+                v56 = v75;
+                v55 = v74;
+                v48 = v72;
+                v49 = v73;
+                while (true) {
+                  lab_0x1a1f90:;
+                    int32_t v76 = v56;
+                    int32_t v77 = v41;
+                    int32_t v78 = v40;
+                    int32_t v79 = v39;
+                    char v80 = v48; // 0x1a1f95
+                    int32_t v81 = v49;
+                    int32_t v82 = v81; // 0x1a1f92
+                    while (v80 != 47) {
+                        int32_t v83 = v81 + 1; // 0x1a1f94
+                        v80 = *(char *)v83;
+                        v82 = v83;
+                        if (v80 == 0) {
+                            // break -> 0x1a1f9c
+                            break;
+                        }
+                        v81 = v83;
+                        v82 = v81;
+                    }
+                    // 0x1a1f9c
+                    v50 = v82;
+                    v60 = v50 + 1;
+                    int32_t v84 = v60 - (int32_t)v55; // 0x1a1fa7
+                    String::Copy((char *)v76, v55, (int64_t)(v84 + 1));
+                    uint32_t v85 = *v2; // 0x1a1fd2
+                    char * v86 = (char *)&v53; // 0x1a1fe0
+                    int32_t v87 = &v53; // 0x1a1fe0
+                    if (v85 >= 1025) {
+                        // 0x1a216d
+                        v87 = Memory::Allocate((int64_t)v85);
+                        v86 = (char *)v87;
+                    }
+                    // 0x1a1ff4
+                    v54 = v86;
+                    if (::realpath(v77, v87) == 0) {
+                        // 0x1a2162
+                        v36 = (char *)v50;
+                        v42 = v79;
+                        v43 = v78;
+                        v44 = v77;
+                        v57 = v84 + v76;
+                        goto lab_0x1a2062;
+                    } else {
+                        int32_t v88 = *v2; // 0x1a2014
+                        String::Copy((char *)v78, v54, (int64_t)v88);
+                        v61 = (char *)v50;
+                        char v89 = *v61; // 0x1a2033
+                        if (v89 == 47) {
+                            // 0x1a2186
+                            File::Path::ForceTrailingSeparator((char *)v79, *v2, 47);
+                            goto lab_0x1a204c;
+                        } else {
+                            if (v89 != 0) {
+                                goto lab_0x1a204c;
+                            } else {
+                                // 0x1a2042
+                                if (*(char *)(v50 - 1) == 47) {
+                                    // 0x1a2186
+                                    File::Path::ForceTrailingSeparator((char *)v79, *v2, 47);
+                                    goto lab_0x1a204c;
+                                } else {
+                                    goto lab_0x1a204c;
+                                }
+                            }
+                        }
+                    }
+                }
+              lab_0x1a1f79:
+                // 0x1a1f79
+                v72 = *(char *)v52;
+                v69 = v46;
+                v70 = v47;
+                v71 = v45;
+                v73 = v52;
+                v74 = v51;
+                v75 = v58;
+                v37 = v59;
+                if (v72 == 0) {
+                    // break -> 0x1a209e
+                    break;
+                }
+            }
+        }
+      lab_0x1a209e:
+        // 0x1a209e
+        String::Copy(v18, v38, (int64_t)*v2);
+        if (v38 != nullptr && v65 != v37) {
+            // 0x1a20d5
+            Memory::Free((int32_t *)v38);
+        }
+    }
+    String::Copy(parms->directory, v18, (int64_t)*v2);
+    if (basepath != basepathfast && basepath != nullptr) {
+        // 0x1a211d
+        Memory::Free(basepath);
+    }
+    if (univpath != univpathfast && univpath != nullptr) {
+        // 0x1a2137
+        Memory::Free(univpath);
+    }
+
+    // // Stack fail guard
+    // int32_t v92 = *(int32_t *)*(int32_t *)0x163946c; // 0x1a214f
+    // if (*(int32_t *)*(int32_t *)0x163946c != v92) {
+    //     // 0x1a2229
+    //     return function_143e456();
+    // }
+    // // 0x1a2157
+    return *(char *)*v90 != 0;
+  lab_0x1a1e60:
+    // 0x1a1e60
+    v31 = (int64_t)*v2;
+    if (v28 > v13 != (v29 == v25)) {
+        // break -> 0x1a1e71
+        goto lab_0x1a1e71_2;
+    }
+    // 0x1a1eeb
+    String::Copy(v30, v23, v31);
+    goto lab_0x1a1e71;
+  lab_0x1a1e71:;
+    int32_t v93 = String::Find(v27, 47, (int64_t)*v2); // 0x1a1e89
+    v26 = v93;
+    if (v93 == 0) {
+        // break (via goto) -> 0x1a1f09
+        goto lab_0x1a1f09;
+    }
+    goto lab_0x1a1e94;
+  lab_0x1a2062:
+    // 0x1a2062
+    v58 = v57;
+    v45 = v44;
+    v47 = v43;
+    v46 = v42;
+    char v94 = *v36; // 0x1a2062
+    v51 = v94 == 0 ? v55 : (char *)v60;
+    v52 = v94 == 0 ? v50 : v60;
+    if (v54 == nullptr || v53 == v54) {
+        // break -> 0x1a1f79
+        goto lab_0x1a1f79;
+    }
+    // 0x1a208b
+    Memory::Free((int32_t *)v54);
+    char v95 = *(char *)v52; // 0x1a2093
+    v39 = v46;
+    v40 = v47;
+    v41 = v45;
+    v56 = v58;
+    v55 = v51;
+    v48 = v95;
+    v49 = v52;
+    v37 = v59;
+    if (v95 == 0) {
+        // break (via goto) -> 0x1a209e
+        goto lab_0x1a209e;
+    }
+    goto lab_0x1a1f90;
+  lab_0x1a204c:
+    // 0x1a204c
+    v36 = v61;
+    v42 = v59;
+    v43 = v59;
+    v44 = v59;
+    v57 = String::Length(v38) + v59;
+    goto lab_0x1a2062;
+
     return true;
 }
 
@@ -289,13 +609,13 @@ bool Move(FileParms* parms) {
     }
 
     // See if we can just rename the file. Pretty fast if we can avoid copying.
-    status = rename(source.Str(), destination.Str());
+    status = ::rename(source.Str(), destination.Str());
     if (status == 0) {
         return true;
     }
 
     // If rename failed due to cross-device linking (can't rename to a different device)
-    // Copy the file from one device to another
+    // Copy the file from one device to another (slow)
     if (errno == EXDEV) {
         if (File::Copy(parms->filename, parms->destination, false)) {
             // Source is deleted once File::Copy is successful.
@@ -322,7 +642,7 @@ bool RemoveDirectory(FileParms* parms) {
     File::Path::QuickNative dirNative(dir);
 
     // Attempt rmdir
-    return rmdir(dirNative.Str()) == 0;
+    return ::rmdir(dirNative.Str()) == 0;
 }
 
 // Change file EOF to a new offset @ parms->position and according to parms->whence.
