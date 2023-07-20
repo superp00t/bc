@@ -2,8 +2,8 @@
 #include "test/Test.hpp"
 
 TEST_CASE("Blizzard::Time::FromUnixTime", "[time]") {
-    SECTION("create correct timestamp from unix time") {
-        auto stamp = Blizzard::Time::FromUnixTime(946707780);
+    SECTION("create zero timestamp from Y2K unix date") {
+        auto stamp = Blizzard::Time::FromUnixTime(946684800);
         REQUIRE(stamp == 0);
     }
 }

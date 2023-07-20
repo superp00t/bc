@@ -87,7 +87,6 @@ TEST_CASE("Blizzard::File::Path", "[filepath]") {
         Blizzard::File::Path::QuickNative fullpathNative(fullpath);
         auto result = fullpathNative.Str();
     }
-
 }
 
 #endif
