@@ -206,6 +206,7 @@ bool MakeAbsolutePath(FileParms* parms) {
 
     BC_FILE_PATH(basepathfast);
     BC_FILE_PATH(univpathfast);
+    BC_FILE_PATH(temp_directory);
     char* basepath = nullptr;
     char* univpath = nullptr;
 
@@ -225,7 +226,7 @@ bool MakeAbsolutePath(FileParms* parms) {
 
     String::Append(basepath, parms->filename, parms->directorySize);
 
-    if (parms->directorySize < BC_FILE_MAX_PATH+1) {
+    if (parms->directorySize <= BC_FILE_MAX_PATH) {
         univpath = univpathfast;
     } else {
         univpath = reinterpret_cast<char*>(Memory::Allocate(parms->directorySize));
@@ -233,338 +234,137 @@ bool MakeAbsolutePath(FileParms* parms) {
 
     File::Path::MakeNativePath(basepath, univpath, parms->directorySize);
 
-    auto post_slash = univpath + 1;
+    const char* local_1060 = nullptr;
+    const char* local_1054 = nullptr;
+    char*       temp_directory = nullptr;
+    char*       copied_univ_path = nullptr;
+    char*       next_slash     = nullptr;
+    BC_FILE_PATH(next_slash_fast);
+    BC_FILE_PATH(temp_directory_fast);
+    char        currByte = 0;
 
-    auto found = String::Find(post_slash, '/', parms->directorySize);
+    auto after_first_slash = univpath + 1;
+    loop_start:
+    do {
+        next_slash = String::Find(after_first_slash, '/', parms->directorySize);
+        if (next_slash == nullptr) {
+            len = Blizzard::String::Length(univpath);
+            if (((len > 2) && (univpath[len - 1] == '.')) && (univpath[len - 2] == '/')) {
+                univpath[len - 1] = '\0';
+            }
 
-    auto v22 = found;
-    char* v18 = basepath;
-    char* v23;
-    const char* v24 = post_slash;
-    const char* v25 = univpath;
-    const char* v26 = nullptr;
-    const char* v27 = nullptr;
-    const char* v28;
-    const char* v29;
-    const char* v30;
-    size_t v31;
-    char v32;
+            if (unkflag) {
+                auto temp_size = parms->directorySize;
 
-    if (found != nullptr) {
-        while (true) {
-            // 0x1a1e94
-            v28 = univpath;
-            v29 = post_slash;
-            v27 = post_slash;
-            v30 = v29;
-            v26 = found;
-            while (true) {
-              lab_0x1a1e94:
-                // 0x1a1e94
-                v25 = v26;
-                v24 = v25 + 1;
-                v23 = (char *)v24;
-                if (*v23 != 46) {
-                    goto lab_0x1a1e60;
+                if (temp_size <= BC_FILE_MAX_PATH) {
+                    temp_directory = temp_directory_fast;
                 } else {
-                    v32 = *(v25 + 2); // 0x1a1e9d
-                    if (v32 == 46) {
-                        // 0x1a1ec7
-                        if (*(v25 + 3) != 47) {
-                            goto lab_0x1a1e60;
-                        } else {
-                            // 0x1a1ecd
-                            String::Copy(v27, (v25 + 4), parms->directorySize);
-                            goto lab_0x1a1e71;
-                        }
-                    } else {
-                        if (v32 != 47) {
-                            goto lab_0x1a1e60;
-                        } else {
-                            // 0x1a1ea9
-                            String::Copy(v23, (char *)(v25 + 3), parms->directorySize);
-                            goto lab_0x1a1e71;
-                        }
+                    temp_directory = reinterpret_cast<char*>(Memory::Allocate(temp_size));
+                }
+
+                local_1060 = temp_directory;
+                local_1054 = univpath;
+
+                after_first_slash = univpath;
+                copied_univ_path = temp_directory;
+                eat_byte:
+                currByte = *after_first_slash;
+                if (currByte != '\0') {
+                    currbyte_must_be_forward_slash:
+                    if (currByte != '/') {
+                        break;
                     }
+                    goto do_workingdir_buffer_realpath;
+                }
+
+                copy_universalpath:
+                String::Copy(univpath, copied_univ_path, parms->directorySize);
+                if ((copied_univ_path != local_1060) && (copied_univ_path != nullptr)) {
+                    Memory::Free(copied_univ_path);
                 }
             }
-          lab_0x1a1e71_2:
-            // 0x1a1e71
-            v22 = String::Find(v23, 47, parms->directorySize);
-            if (v22 == 0) {
-                // break -> 0x1a1f09
-                break;
+
+            String::Copy(parms->directory, univpath, parms->directorySize);
+            currByte = *parms->directory;
+
+            if (basepath != basepathfast && basepath != nullptr) {
+                // 0x1a211d
+                Memory::Free(basepath);
             }
-        }
-    }
-
-lab_0x1a1f09:
-    auto v33 = String::Length(univpath); // 0x1a1f12
-    if (v33 >= 3) {
-        char*  v34 = v33 + univpath;
-        char * v35 = (char *)(v34 - 1); // 0x1a1f26
-        if (*v35 == 46) {
-            // 0x1a2216
-            if (*(char *)(v34 - 2) == 47) {
-                // 0x1a2221
-                *v35 = 0;
+            if (univpath != univpathfast && univpath != nullptr) {
+                // 0x1a2137
+                Memory::Free(univpath);
             }
+
+            return currByte != '\0';
         }
-    }
 
-    // 0x1a1f2f
-    char * v36;
-    char*  v37;
-    char * v38;
-    char*  v39;
-    char*  v40;
-    char*  v41;
-    char*  v42;
-    char*  v43;
-    char*  v44;
-    char*  v45;
-    char*  v46;
-    char*  v47;
-    char v48;
-    char*  v49;
-    char*  v50;
-    char* v51;
-    char*  v52;
-    char v53[1024] = {0}; // bp-4152, 0x1a1d50
-    char* v54;
-    char* v55;
-    char*  v56;
-    char*  v57;
-    char*  v58;
-    char*  v59;
-    char*  v60; // 0x1a1f9c
-    char* v61;
-    size_t v62;
-    char*  v63;
-    char v64[1024] = {0}; // bp-3120, 0x1a1d50
-    char* v65;
-    void* v67;
-    char  v68;
-    char*  v69;
-    char*  v70;
-    char*  v71;
-    char v72; // 0x1a1f79
-    char* v73;
-    char * v74;
-    char*  v75;
-    char*  v76;
-    char*  v77;
-    char*  v78;
-    char*  v79;
-    char v80; // 0x1a1f95
-    char*  v81;
-    char*  v82; // 0x1a1f92
-    char*  v83;
-    char*  v84;
-    size_t v85;
-    size_t v86;
-    char*  v87;
-    char   v89;
-    char v95;
+        if (next_slash[1] != '.') {
+            copy_or_increment_resume_loop:
+            if ((univpath < previous_character) && (after_first_slash == next_slash)) {
+                String::Copy(next_slash,next_slash + 1,parms->directorySize);
+            } else {
+                after_first_slash = next_slash + 1;
+                previous_character = next_slash;
+            }
+            goto loop_start;
+        }
 
-    if (unkflag) {
-        v62 = parms->directorySize; // 0x1a1f3f
-        char* v63;
-        char*  v65;
-        if (v62 < 1025) {
-            v38 = v64;
-            v63 = v64;
-            v65 = v64;
+        if (next_slash[2] == '.') {
+            if (next_slash[3] != '/') {
+                goto copy_or_increment_resume_loop;
+            }
+            String::Copy(after_first_slash, next_slash + 4, parms->directorySize);
         } else {
-            v67 = reinterpret_cast<char*>(Memory::Allocate((int64_t)v62)); // 0x1a21f8
-            v38 = v67;
-            v63 = v67;
-            v65 = v64;
-        }
-        v68 = *v18; // 0x1a1f79
-        if (v68 == 0) {
-            // 0x1a1f67
-            v37 = v38;
-        } else {
-            // 0x1a1f90
-            v59 = v38;
-            v69 = v63;
-            v70 = v63;
-            v71 = v63;
-            v72 = v68; // 0x1a1f79
-            v73 = v18;
-            v74 = v18;
-            v75 = v63;
-            while (true) {
-                // 0x1a1f90
-                v39 = v69;
-                v40 = v70;
-                v41 = v71;
-                v56 = v75;
-                v55 = v74;
-                v48 = v72;
-                v49 = v73;
-                while (true) {
-                  lab_0x1a1f90:;
-                    v76 = v56;
-                    v77 = v41;
-                    v78 = v40;
-                    v79 = v39;
-                    v80 = v48; // 0x1a1f95
-                    v81 = v49;
-                    v82 = v81; // 0x1a1f92
-                    while (v80 != 47) {
-                        v83 = v81 + 1; // 0x1a1f94
-                        v80 = *(char *)v83;
-                        v82 = v83;
-                        if (v80 == 0) {
-                            // break -> 0x1a1f9c
-                            break;
-                        }
-                        v81 = v83;
-                        v82 = v81;
-                    }
-                    // 0x1a1f9c
-                    v50 = v82;
-                    v60 = v50 + 1;
-                    v84 = v60 - v55; // 0x1a1fa7
-                    String::Copy((char *)v76, v55, (int64_t)(v84 + 1));
-                    v85 = parms->directorySize; // 0x1a1fd2
-                    v86 = v53; // 0x1a1fe0
-                    v87 = &v53; // 0x1a1fe0
-                    if (v85 >= 1025) {
-                        // 0x1a216d
-                        v87 = Memory::Allocate((int64_t)v85);
-                        v86 = v87;
-                    }
-                    // 0x1a1ff4
-                    v54 = v86;
-                    if (::realpath(v77, v87) == 0) {
-                        // 0x1a2162
-                        v36 = (char *)v50;
-                        v42 = v79;
-                        v43 = v78;
-                        v44 = v77;
-                        v57 = v84 + v76;
-                        goto lab_0x1a2062;
-                    } else {
-                        v88 = parms->directorySize;
-                        String::Copy((char *)v78, v54, parms->directorySize);
-                        v61 = (char *)v50;
-                        v89 = *v61; // 0x1a2033
-                        if (v89 == 47) {
-                            // 0x1a2186
-                            File::Path::ForceTrailingSeparator((char *)v79, *v2, 47);
-                            goto lab_0x1a204c;
-                        } else {
-                            if (v89 != 0) {
-                                goto lab_0x1a204c;
-                            } else {
-                                // 0x1a2042
-                                if (*(char *)(v50 - 1) == 47) {
-                                    // 0x1a2186
-                                    File::Path::ForceTrailingSeparator((char *)v79, *v2, 47);
-                                    goto lab_0x1a204c;
-                                } else {
-                                    goto lab_0x1a204c;
-                                }
-                            }
-                        }
-                    }
-                }
-              lab_0x1a1f79:
-                // 0x1a1f79
-                v72 = *(char *)v52;
-                v69 = v46;
-                v70 = v47;
-                v71 = v45;
-                v73 = v52;
-                v74 = v51;
-                v75 = v58;
-                v37 = v59;
-                if (v72 == 0) {
-                    // break -> 0x1a209e
-                    break;
-                }
+            if (next_slash[2] != '/') {
+                goto copy_or_increment_resume_loop;
             }
+            String::Copy(next_slash + 1, next_slash + 3, parms->directorySize);
         }
-        lab_0x1a209e:
-        // 0x1a209e
-        String::Copy(v18, v38, parms->directorySize);
-        if (v38 != nullptr && v65 != v8) {
-            // 0x1a20d5
-            Memory::Free(v38);
+    } while(true);
+
+    after_first_slash = after_first_slash + 1;
+    currByte = *after_first_slash;
+
+    if (currByte == '\0') {
+        do_workingdir_buffer_realpath:
+        previous_character = after_first_slash + 1;
+        String::Copy(temp_directory, local_1054, (static_cast<int32_t>(previous_character) - static_cast<int32_t>(local_1054)) + 1);
+        if (parms->directorySize <= BC_FILE_MAX_PATH) {
+            next_slash = next_slash_fast;
+        } else {
+            next_slash = reinterpret_cast<char*>Memory::Allocate(parms->directorySize);
+        }
+
+        status = ::realpath(copied_univ_path, next_slash);
+        if (status == 0) {
+            temp_directory = temp_directory + (static_cast<int32_t>(previous_character) - static_cast<int32_t>(local_1054));
+        } else {
+            String::Copy(copied_univ_path,next_slash,parms->directorySize);
+            if ((*after_first_slash == '/') || ((*after_first_slash == '\0' && (after_first_slash[-1] == '/')))) {
+                File::Path::ForceTrailingSeparator(copied_univ_path, parms->directorySize, '/');
+            }
+            temp_directory = copied_univ_path;
+            status = String::Length(copied_univ_path);
+            temp_directory = temp_directory + status;
+        }
+
+        if (*after_first_slash != '\0') {
+            after_first_slash = previous_character;
+            local_1054 = previous_character;
+        }
+
+        if ((next_slash == nextSlashFast) || (next_slash == nullptr)) {
+            goto eat_byte;
+        }
+
+        Memory::Free(next_slash);
+        currByte = *after_first_slash;
+        if (currByte == '\0') {
+            goto copy_universalpath;
         }
     }
-    String::Copy(parms->directory, v18, parms->directorySize);
-    if (basepath != basepathfast && basepath != nullptr) {
-        // 0x1a211d
-        Memory::Free(basepath);
-    }
-    if (univpath != univpathfast && univpath != nullptr) {
-        // 0x1a2137
-        Memory::Free(univpath);
-    }
-
-    // Stack fail guard
-    return *(char *)*v90 != 0;
-  lab_0x1a1e60:
-    // 0x1a1e60
-    v31 = parms->directorySize;
-    if (v28 > v13 != (v29 == v25)) {
-        // break -> 0x1a1e71
-        goto lab_0x1a1e71_2;
-    }
-    // 0x1a1eeb
-    String::Copy(v30, v23, v31);
-    goto lab_0x1a1e71;
-  lab_0x1a1e71:;
-    char* v93 = String::Find(v27, 47, parms->directorySize); // 0x1a1e89
-    v26 = v93;
-    if (v93 == 0) {
-        // break (via goto) -> 0x1a1f09
-        goto lab_0x1a1f09;
-    }
-    goto lab_0x1a1e94;
-  lab_0x1a2062:
-    // 0x1a2062
-    v58 = v57;
-    v45 = v44;
-    v47 = v43;
-    v46 = v42;
-    char v94 = *v36; // 0x1a2062
-    v51 = v94 == 0 ? v55 : (char *)v60;
-    v52 = v94 == 0 ? v50 : v60;
-    if (v54 == nullptr || v53 == v54) {
-        // break -> 0x1a1f79
-        goto lab_0x1a1f79;
-    }
-    // 0x1a208b
-    Memory::Free((int32_t *)v54);
-    v95 = *(char *)v52; // 0x1a2093
-    v39 = v46;
-    v40 = v47;
-    v41 = v45;
-    v56 = v58;
-    v55 = v51;
-    v48 = v95;
-    v49 = v52;
-    v37 = v59;
-    if (v95 == 0) {
-        // break (via goto) -> 0x1a209e
-        goto lab_0x1a209e;
-    }
-    goto lab_0x1a1f90;
-  lab_0x1a204c:
-    // 0x1a204c
-    v36 = v61;
-    v42 = v59;
-    v43 = v59;
-    v44 = v59;
-    v57 = String::Length(v38) + v59;
-    goto lab_0x1a2062;
-
-    return true;
+    goto currbyte_must_be_forward_slash;
 }
 
 // Create a full directory path
@@ -615,7 +415,7 @@ bool CreateDirectory(FileParms* parms) {
     }
 
     // check remaining path existence
-    if (stat(tmp, &sb) != 0) {
+    if (::stat(tmp, &sb) != 0) {
         // path does not exist, create directory
         if (::mkdir(tmp, 511) < 0) {
             return false;
