@@ -19,14 +19,14 @@ namespace Stacked {
 
 bool SetWorkingDirectory(FileParms* parms) {
     BLIZZARD_ASSERT(parms->filename);
-    return SetCurrentDirectory(parms->filename) != 0;
+    return ::SetCurrentDirectory(parms->filename) != 0;
 }
 
 bool Close(FileParms* parms) {
     auto file = parms->stream;
     BLIZZARD_ASSERT(file != nullptr);
 
-    CloseHandle(file->filehandle);
+    ::CloseHandle(file->filehandle);
     Memory::Free(file);
 
     return true;
@@ -42,7 +42,7 @@ bool GetWorkingDirectory(FileParms* parms) {
     auto size      = static_cast<DWORD>(parms->directorySize);
     auto directory = static_cast<LPSTR>(parms->directory);
 
-    GetCurrentDirectory(size, directory);
+    ::GetCurrentDirectory(size, directory);
 
     return true;
 }
@@ -74,7 +74,7 @@ bool ProcessDirFast(FileParms* parms) {
     //
     WIN32_FIND_DATA findData;
 
-    auto hFindFile = FindFirstFile(formatted, &findData);
+    auto hFindFile = ::FindFirstFile(formatted, &findData);
 
     if (hFindFile == INVALID_HANDLE_VALUE) {
         BC_FILE_SET_ERROR_MSG(BC_FILE_ERROR_INVALID_ARGUMENT, "Win32 ProcessDirFast - %s", directory);
@@ -91,17 +91,17 @@ bool ProcessDirFast(FileParms* parms) {
             processDirParms.itemIsDirectory = (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
 
             if (!callback(processDirParms)) {
-                FindClose(hFindFile);
+                ::FindClose(hFindFile);
                 return true;
             }
 
-            if (!FindNextFile(hFindFile, &findData)) {
+            if (!::FindNextFile(hFindFile, &findData)) {
                 break;
             }
         }
     }
 
-    FindClose(hFindFile);
+    ::FindClose(hFindFile);
     return false;
 }
 
@@ -114,7 +114,7 @@ bool Exists(FileParms* parms) {
 
     File::Path::QuickNative filepathNative(filepath);
 
-    auto dwFileAttributes = GetFileAttributes(static_cast<LPCSTR>(filepathNative.Str()));
+    auto dwFileAttributes = ::GetFileAttributes(static_cast<LPCSTR>(filepathNative.Str()));
 
     if (dwFileAttributes == INVALID_FILE_ATTRIBUTES) {
         parms->info->attributes = 0;
@@ -135,7 +135,7 @@ bool Flush(FileParms* parms) {
         return false;
     }
 
-    auto status = FlushFileBuffers(file->filehandle);
+    auto status = ::FlushFileBuffers(file->filehandle);
     return status != 0;
 }
 
@@ -170,7 +170,7 @@ bool GetFileInfo(FileParms* parms) {
         WIN32_FILE_ATTRIBUTE_DATA fileAttributeData = {};
 
         // Read attributes
-        if (!GetFileAttributesExA(filepathNative.Str(), GetFileExInfoStandard, &fileAttributeData)) {
+        if (!::GetFileAttributesExA(filepathNative.Str(), GetFileExInfoStandard, &fileAttributeData)) {
             BC_FILE_SET_ERROR_MSG(BC_FILE_ERROR_INVALID_HANDLE, "Win32 GetFileInfo - GetFileAttributesExA failed");
             return false;
         }
@@ -230,7 +230,7 @@ bool GetPos(FileParms* parms) {
     }
 
     LONG  high = 0;
-    DWORD low  = SetFilePointer(file->filehandle, 0, &high, FILE_CURRENT);
+    DWORD low  = ::SetFilePointer(file->filehandle, 0, &high, FILE_CURRENT);
     if (low == -1 && GetLastError()) {
         BC_FILE_SET_ERROR(BC_FILE_ERROR_INVALID_HANDLE);
         return false;
@@ -344,7 +344,7 @@ bool IsReadOnly(FileParms* parms) {
 
     File::Path::QuickNative filepathNative(filepath);
 
-    auto dwFileAttributes = GetFileAttributes(filepathNative.Str());
+    auto dwFileAttributes = ::GetFileAttributes(filepathNative.Str());
 
     if (dwFileAttributes == INVALID_FILE_ATTRIBUTES) {
         BC_FILE_SET_ERROR(BC_FILE_ERROR_INVALID_ARGUMENT);
@@ -364,7 +364,9 @@ bool MakeAbsolutePath(FileParms* parms) {
         return false;
     }
 
-    _fullpath(full, path, BC_FILE_MAX_PATH);
+    ::_fullpath(full, path, BC_FILE_MAX_PATH);
+
+    File::Path::ForceTrailingSeparator(full, BC_FILE_MAX_PATH, BC_FILE_SYSTEM_PATH_SEPARATOR);
 
     String::Copy(parms->directory, full, parms->directorySize);
 
@@ -557,8 +559,6 @@ bool Read(File::StreamRecord* file, void* data, int64_t offset, size_t* bytes) {
         return true;
     }
 
-    int64_t origpos;
-
     if (offset > -1) {
         if (!File::SetPos(file, offset, BC_FILE_SEEK_START)) {
             return false;
@@ -567,7 +567,7 @@ bool Read(File::StreamRecord* file, void* data, int64_t offset, size_t* bytes) {
 
     DWORD dwRead = 0;
 
-    BOOL ok = ReadFile(file->filehandle, data, *bytes, &dwRead, nullptr);
+    BOOL ok = ::ReadFile(file->filehandle, data, *bytes, &dwRead, nullptr);
 
     if (ok == 0) {
         // append any Win32 failure to the error log
