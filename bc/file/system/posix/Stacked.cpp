@@ -244,6 +244,7 @@ bool MakeAbsolutePath(FileParms* parms) {
     BC_FILE_PATH(temp_directory_fast);
     char         current_byte = 0;
     size_t       len = 0;
+    int32_t      status = 0;
 
     auto after_first_slash = univpath + 1;
     loop_start:
