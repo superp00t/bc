@@ -244,7 +244,7 @@ bool MakeAbsolutePath(FileParms* parms) {
     BC_FILE_PATH(temp_directory_fast);
     char         current_byte = 0;
     size_t       len = 0;
-    int32_t      status = 0;
+    size_t       copied_len = 0;
 
     auto after_first_slash = univpath + 1;
     loop_start:
@@ -339,8 +339,8 @@ bool MakeAbsolutePath(FileParms* parms) {
             next_slash = reinterpret_cast<char*>(Memory::Allocate(parms->directorySize));
         }
 
-        status = ::realpath(copied_univ_path, next_slash);
-        if (status == 0) {
+
+        if (realpath(copied_univ_path, next_slash) == nullptr) {
             temp_directory = temp_directory + (static_cast<int32_t>(previous_character - local_1054));
         } else {
             String::Copy(copied_univ_path,next_slash,parms->directorySize);
@@ -348,8 +348,8 @@ bool MakeAbsolutePath(FileParms* parms) {
                 File::Path::ForceTrailingSeparator(copied_univ_path, parms->directorySize, '/');
             }
             temp_directory = copied_univ_path;
-            status = String::Length(copied_univ_path);
-            temp_directory = temp_directory + status;
+            copied_len = String::Length(copied_univ_path);
+            temp_directory = temp_directory + copied_len;
         }
 
         if (*after_first_slash != '\0') {
