@@ -236,12 +236,13 @@ bool MakeAbsolutePath(FileParms* parms) {
     const char*  local_1060 = nullptr;
     const char*  local_1054 = nullptr;
     char*        temp_directory = nullptr;
+    size_t       temp_size = 0;
     char*        copied_univ_path = nullptr;
     char*        previous_character = nullptr;
-    const char*  next_slash     = nullptr;
+    char*        next_slash         = nullptr;
     BC_FILE_PATH(next_slash_fast);
     BC_FILE_PATH(temp_directory_fast);
-    char         currByte = 0;
+    char         current_byte = 0;
     size_t       len = 0;
 
     auto after_first_slash = univpath + 1;
@@ -255,7 +256,7 @@ bool MakeAbsolutePath(FileParms* parms) {
             }
 
             if (unkflag) {
-                auto temp_size = parms->directorySize;
+                temp_size = parms->directorySize;
 
                 if (temp_size <= BC_FILE_MAX_PATH) {
                     temp_directory = temp_directory_fast;
