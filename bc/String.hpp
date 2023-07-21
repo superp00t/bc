@@ -30,7 +30,7 @@ int32_t Append(char* dst, const char* src, size_t cap);
 
 int32_t Copy(char* dst, const char* src, size_t len);
 
-const char* Find(const char* str, char ch, size_t len);
+char* Find(char* str, char ch, size_t len);
 
 const char* FindFilename(const char* str);
 

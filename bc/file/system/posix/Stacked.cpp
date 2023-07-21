@@ -206,7 +206,6 @@ bool MakeAbsolutePath(FileParms* parms) {
 
     BC_FILE_PATH(basepathfast);
     BC_FILE_PATH(univpathfast);
-    BC_FILE_PATH(temp_directory);
     char* basepath = nullptr;
     char* univpath = nullptr;
 
@@ -234,21 +233,23 @@ bool MakeAbsolutePath(FileParms* parms) {
 
     File::Path::MakeNativePath(basepath, univpath, parms->directorySize);
 
-    const char* local_1060 = nullptr;
-    const char* local_1054 = nullptr;
-    char*       temp_directory = nullptr;
-    char*       copied_univ_path = nullptr;
-    char*       next_slash     = nullptr;
+    const char*  local_1060 = nullptr;
+    const char*  local_1054 = nullptr;
+    char*        temp_directory = nullptr;
+    char*        copied_univ_path = nullptr;
+    char*        previous_character = nullptr;
+    const char*  next_slash     = nullptr;
     BC_FILE_PATH(next_slash_fast);
     BC_FILE_PATH(temp_directory_fast);
-    char        currByte = 0;
+    char         currByte = 0;
+    size_t       len = 0;
 
     auto after_first_slash = univpath + 1;
     loop_start:
     do {
         next_slash = String::Find(after_first_slash, '/', parms->directorySize);
         if (next_slash == nullptr) {
-            len = Blizzard::String::Length(univpath);
+            len = String::Length(univpath);
             if (((len > 2) && (univpath[len - 1] == '.')) && (univpath[len - 2] == '/')) {
                 univpath[len - 1] = '\0';
             }
@@ -268,10 +269,10 @@ bool MakeAbsolutePath(FileParms* parms) {
                 after_first_slash = univpath;
                 copied_univ_path = temp_directory;
                 eat_byte:
-                currByte = *after_first_slash;
-                if (currByte != '\0') {
-                    currbyte_must_be_forward_slash:
-                    if (currByte != '/') {
+                current_byte = *after_first_slash;
+                if (current_byte != '\0') {
+                    current_byte_must_be_forward_slash:
+                    if (current_byte != '/') {
                         break;
                     }
                     goto do_workingdir_buffer_realpath;
@@ -285,7 +286,7 @@ bool MakeAbsolutePath(FileParms* parms) {
             }
 
             String::Copy(parms->directory, univpath, parms->directorySize);
-            currByte = *parms->directory;
+            current_byte = *parms->directory;
 
             if (basepath != basepathfast && basepath != nullptr) {
                 // 0x1a211d
@@ -296,7 +297,7 @@ bool MakeAbsolutePath(FileParms* parms) {
                 Memory::Free(univpath);
             }
 
-            return currByte != '\0';
+            return current_byte != '\0';
         }
 
         if (next_slash[1] != '.') {
@@ -324,21 +325,21 @@ bool MakeAbsolutePath(FileParms* parms) {
     } while(true);
 
     after_first_slash = after_first_slash + 1;
-    currByte = *after_first_slash;
+    current_byte = *after_first_slash;
 
-    if (currByte == '\0') {
+    if (current_byte == '\0') {
         do_workingdir_buffer_realpath:
         previous_character = after_first_slash + 1;
-        String::Copy(temp_directory, local_1054, (static_cast<int32_t>(previous_character) - static_cast<int32_t>(local_1054)) + 1);
+        String::Copy(temp_directory, local_1054, (static_cast<int32_t>(previous_character - local_1054)) + 1);
         if (parms->directorySize <= BC_FILE_MAX_PATH) {
             next_slash = next_slash_fast;
         } else {
-            next_slash = reinterpret_cast<char*>Memory::Allocate(parms->directorySize);
+            next_slash = reinterpret_cast<char*>(Memory::Allocate(parms->directorySize));
         }
 
         status = ::realpath(copied_univ_path, next_slash);
         if (status == 0) {
-            temp_directory = temp_directory + (static_cast<int32_t>(previous_character) - static_cast<int32_t>(local_1054));
+            temp_directory = temp_directory + (static_cast<int32_t>(previous_character - local_1054));
         } else {
             String::Copy(copied_univ_path,next_slash,parms->directorySize);
             if ((*after_first_slash == '/') || ((*after_first_slash == '\0' && (after_first_slash[-1] == '/')))) {
@@ -354,17 +355,17 @@ bool MakeAbsolutePath(FileParms* parms) {
             local_1054 = previous_character;
         }
 
-        if ((next_slash == nextSlashFast) || (next_slash == nullptr)) {
+        if ((next_slash == next_slash_fast) || (next_slash == nullptr)) {
             goto eat_byte;
         }
 
         Memory::Free(next_slash);
-        currByte = *after_first_slash;
-        if (currByte == '\0') {
+        current_byte = *after_first_slash;
+        if (current_byte == '\0') {
             goto copy_universalpath;
         }
     }
-    goto currbyte_must_be_forward_slash;
+    goto current_byte_must_be_forward_slash;
 }
 
 // Create a full directory path

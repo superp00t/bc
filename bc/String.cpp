@@ -98,7 +98,7 @@ int32_t Copy(char* dst, const char* src, size_t len) {
 
 // Find first occurence of char ch within string str
 // returns ptr to first occurence, or null if it is not found
-const char* Find(const char* str, char ch, size_t len) {
+char* Find(char* str, char ch, size_t len) {
     // Check if the string is null or empty.
     if (str == nullptr || len == 0) {
         return nullptr;
