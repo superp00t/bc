@@ -49,9 +49,9 @@ bool Open(FileParms* parms) {
             flags |= O_EXCL;
         }
 
-        fd = open(pathNative.Str(), flags, 511);
+        fd = ::open(pathNative.Str(), flags, 511);
     } else {
-        fd = open(pathNative.Str(), flags);
+        fd = ::open(pathNative.Str(), flags);
     }
 
     if (fd == -1) {
@@ -173,7 +173,7 @@ bool ProcessDirFast(FileParms* parms) {
         }
     }
 
-    closedir(directory);
+    ::closedir(directory);
     return status;
 }
 
@@ -340,7 +340,7 @@ bool MakeAbsolutePath(FileParms* parms) {
         }
 
 
-        if (realpath(copied_univ_path, next_slash) == nullptr) {
+        if (::realpath(copied_univ_path, next_slash) == nullptr) {
             temp_directory = temp_directory + (static_cast<int32_t>(previous_character - local_1054));
         } else {
             String::Copy(copied_univ_path,next_slash,parms->directorySize);
